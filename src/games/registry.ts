@@ -1,0 +1,37 @@
+import type { ComponentType } from 'react';
+
+export interface GameEntry {
+  name: string;
+  slug: string;
+  description: string;
+  loader: () => Promise<{ default: ComponentType<GameComponentProps> }>;
+}
+
+export interface GameComponentProps {
+  theme: 'dark' | 'light';
+  onGameOver: (result: { score: number; level: number; timeOfDeath: number }) => void;
+  onScoreChange: (score: number) => void;
+  onLivesChange: (lives: number) => void;
+  onLevelChange: (level: number) => void;
+  onCountdown: (timeRemaining: number) => void;
+  engineRef: React.MutableRefObject<{ pause: () => void; resume: () => void; start: () => void } | null>;
+}
+
+export const registry: Record<string, GameEntry> = {
+  'target-precision': {
+    name: 'Target Precision',
+    slug: 'target-precision',
+    description: 'Hit the bullseye before time runs out',
+    loader: () => import('./target-precision'),
+  },
+};
+
+export const DEFAULT_GAME = 'target-precision';
+
+export function getGameSlugs(): string[] {
+  return Object.keys(registry);
+}
+
+export function getGameEntry(slug: string): GameEntry | undefined {
+  return registry[slug];
+}
