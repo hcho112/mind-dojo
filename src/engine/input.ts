@@ -26,6 +26,7 @@ export class InputHandler {
   private handleTouch = (e: TouchEvent): void => {
     e.preventDefault();
     const touch = e.touches[0];
+    if (!touch) return;
     const rect = this.canvas.getBoundingClientRect();
     const x = touch.clientX - rect.left;
     const y = touch.clientY - rect.top;

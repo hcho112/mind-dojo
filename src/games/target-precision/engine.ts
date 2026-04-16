@@ -59,6 +59,17 @@ export class TargetPrecisionEngine implements MiniGame {
   pause(): void { this.gameLoop.pause(); }
   resume(): void { this.gameLoop.resume(); }
 
+  get isRunning(): boolean { return this.running && !this.gameOver; }
+
+  resize(): void {
+    this.renderer.setupCanvas();
+  }
+
+  setTheme(theme: GameConfig['theme']): void {
+    this.config = { ...this.config, theme };
+    this.renderer.setTheme(theme);
+  }
+
   destroy(): void {
     this.gameLoop.stop();
     this.inputHandler.destroy();

@@ -3,13 +3,14 @@
 interface GameHUDProps {
   score: number;
   lives: number;
+  maxLives: number;
   level: number;
   timeRemaining: number;
   onMenuOpen: () => void;
   visible: boolean;
 }
 
-export function GameHUD({ score, lives, level, timeRemaining, onMenuOpen, visible }: GameHUDProps) {
+export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOpen, visible }: GameHUDProps) {
   if (!visible) return null;
 
   const minutes = Math.floor(timeRemaining / 60);
@@ -45,7 +46,7 @@ export function GameHUD({ score, lives, level, timeRemaining, onMenuOpen, visibl
 
       <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center p-4 gap-4">
         <div className="flex gap-1">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: maxLives }).map((_, i) => (
             <span
               key={i}
               className={`text-xl transition-opacity ${i < lives ? 'opacity-100' : 'opacity-30'}`}

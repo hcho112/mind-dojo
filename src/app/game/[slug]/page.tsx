@@ -75,6 +75,7 @@ export default function GamePage() {
   const [currentSlug, setCurrentSlug] = useState(slug);
 
   const engineRef = useRef<{ pause: () => void; resume: () => void; start: () => void } | null>(null);
+  const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset game state when the slug changes (detected via derived state)
   if (currentSlug !== slug) {
@@ -91,7 +92,18 @@ export default function GamePage() {
     openGameDB();
   }, [slug]);
 
+  // Clean up game-over timer on unmount
+  useEffect(() => {
+    return () => {
+      if (gameOverTimerRef.current) clearTimeout(gameOverTimerRef.current);
+    };
+  }, []);
+
   const handleStart = useCallback(() => {
+    if (gameOverTimerRef.current) {
+      clearTimeout(gameOverTimerRef.current);
+      gameOverTimerRef.current = null;
+    }
     setGameState('playing');
     setScore(0);
     setLives(GAME_DEFAULTS.initialLives);
@@ -107,7 +119,10 @@ export default function GamePage() {
       timeOfDeath: result.timeOfDeath,
       timestamp: Date.now(),
     });
-    setTimeout(() => setGameState('idle'), 1500);
+    gameOverTimerRef.current = setTimeout(() => {
+      setGameState('idle');
+      gameOverTimerRef.current = null;
+    }, 1500);
   }, [slug]);
 
   const handleMenuOpen = useCallback(() => {
@@ -151,6 +166,7 @@ export default function GamePage() {
       <GameHUD
         score={score}
         lives={lives}
+        maxLives={GAME_DEFAULTS.initialLives}
         level={level}
         timeRemaining={timeRemaining}
         onMenuOpen={handleMenuOpen}
