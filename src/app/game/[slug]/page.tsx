@@ -35,7 +35,7 @@ function useGameComponent(slug: string) {
     entry.loader().then((mod) => {
       if (cancelled) return;
       gameComponents[slug] = mod.default;
-      setComponent(mod.default);
+      setComponent(() => mod.default);
     });
 
     return () => {
