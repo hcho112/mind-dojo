@@ -27,7 +27,6 @@ function useGameComponent(slug: string) {
     if (!entry) return;
 
     if (gameComponents[slug]) {
-      // Already cached — no setState needed, initial state handles it
       return;
     }
 
@@ -43,7 +42,6 @@ function useGameComponent(slug: string) {
     };
   }, [slug]);
 
-  // Re-initialise when slug changes and component is already cached
   const cached = gameComponents[slug] || null;
   const resolved = Component ?? cached;
 
@@ -58,6 +56,8 @@ function GameSection({ GameComponent, ...props }: GameSectionProps) {
   return <GameComponent {...props} />;
 }
 
+type GameState = 'idle' | 'playing' | 'paused' | 'levelTransition' | 'gameover';
+
 export default function GamePage() {
   const params = useParams();
   const slug = (params.slug as string) || DEFAULT_GAME;
@@ -66,7 +66,7 @@ export default function GamePage() {
   const gameEntry = getGameEntry(slug);
   const GameComponent = useGameComponent(slug);
 
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameover'>('idle');
+  const [gameState, setGameState] = useState<GameState>('idle');
   const [score, setScore] = useState<number>(0);
   const [lives, setLives] = useState<number>(GAME_DEFAULTS.initialLives);
   const [level, setLevel] = useState<number>(1);
@@ -76,8 +76,10 @@ export default function GamePage() {
 
   const engineRef = useRef<{ pause: () => void; resume: () => void; start: () => void } | null>(null);
   const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track state before menu opened so we can restore it
+  const stateBeforeMenuRef = useRef<GameState>('idle');
 
-  // Reset game state when the slug changes (detected via derived state)
+  // Reset game state when the slug changes
   if (currentSlug !== slug) {
     setCurrentSlug(slug);
     setGameState('idle');
@@ -125,27 +127,53 @@ export default function GamePage() {
     }, 1500);
   }, [slug]);
 
-  const handleMenuOpen = useCallback(() => {
-    setMenuOpen(true);
+  const handleLevelUp = useCallback((newLevel: number) => {
+    setLevel(newLevel);
+    // Engine already paused itself in advanceLevel()
+    setGameState('levelTransition');
+  }, []);
+
+  const handleContinueLevel = useCallback(() => {
+    setGameState('playing');
+    engineRef.current?.resume();
+  }, []);
+
+  const handlePause = useCallback(() => {
+    setGameState('paused');
     engineRef.current?.pause();
   }, []);
 
-  const handleMenuClose = useCallback(() => {
-    setMenuOpen(false);
+  const handleResume = useCallback(() => {
+    setGameState('playing');
+    engineRef.current?.resume();
+  }, []);
+
+  const handleMenuOpen = useCallback(() => {
+    stateBeforeMenuRef.current = gameState;
+    setMenuOpen(true);
+    // Only pause if actively playing
     if (gameState === 'playing') {
-      engineRef.current?.resume();
+      engineRef.current?.pause();
     }
   }, [gameState]);
+
+  const handleMenuClose = useCallback(() => {
+    setMenuOpen(false);
+    // Resume only if we were playing before the menu opened
+    if (stateBeforeMenuRef.current === 'playing') {
+      engineRef.current?.resume();
+    }
+  }, []);
 
   const gameProps = useMemo<Omit<GameSectionProps, 'GameComponent'>>(() => ({
     theme,
     onGameOver: handleGameOver,
     onScoreChange: setScore,
     onLivesChange: setLives,
-    onLevelChange: setLevel,
+    onLevelChange: handleLevelUp,
     onCountdown: setTimeRemaining,
     engineRef,
-  }), [theme, handleGameOver]);
+  }), [theme, handleGameOver, handleLevelUp]);
 
   if (!gameEntry) {
     return (
@@ -155,6 +183,8 @@ export default function GamePage() {
     );
   }
 
+  const isGameActive = gameState === 'playing' || gameState === 'paused' || gameState === 'levelTransition';
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       {!GameComponent && <GameSkeleton />}
@@ -163,6 +193,7 @@ export default function GamePage() {
         <GameSection GameComponent={GameComponent} {...gameProps} />
       )}
 
+      {/* HUD — visible during active game states */}
       <GameHUD
         score={score}
         lives={lives}
@@ -170,16 +201,49 @@ export default function GamePage() {
         level={level}
         timeRemaining={timeRemaining}
         onMenuOpen={handleMenuOpen}
-        visible={gameState === 'playing'}
+        onPause={handlePause}
+        visible={isGameActive}
       />
 
+      {/* Pause overlay */}
+      {gameState === 'paused' && (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center
+            bg-black/50 backdrop-blur-sm cursor-pointer"
+          onClick={handleResume}
+        >
+          <div className="px-8 py-4 rounded-2xl bg-[var(--surface)]/90 backdrop-blur-md">
+            <h2 className="text-3xl font-bold text-[var(--text)] mb-2 text-center">Paused</h2>
+            <p className="text-[var(--text-muted)] text-center animate-pulse">Click to resume</p>
+          </div>
+        </div>
+      )}
+
+      {/* Level transition overlay */}
+      {gameState === 'levelTransition' && (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center
+            bg-black/50 backdrop-blur-sm cursor-pointer"
+          onClick={handleContinueLevel}
+        >
+          <div className="px-8 py-6 rounded-2xl bg-[var(--surface)]/90 backdrop-blur-md text-center">
+            <p className="text-sm uppercase tracking-wider text-[var(--accent)] mb-1">Level Complete</p>
+            <h2 className="text-4xl font-bold text-[var(--text)] mb-4">Level {level}</h2>
+            <p className="text-[var(--text-muted)] animate-pulse">Click to continue</p>
+          </div>
+        </div>
+      )}
+
+      {/* Start screen */}
       <StartScreen
         gameName={gameEntry.name}
         gameSlug={slug}
         onStart={handleStart}
+        onMenuOpen={handleMenuOpen}
         visible={gameState === 'idle'}
       />
 
+      {/* Menu drawer — accessible from any state */}
       <MenuDrawer
         isOpen={menuOpen}
         onClose={handleMenuClose}

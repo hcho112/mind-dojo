@@ -208,6 +208,9 @@ export class TargetPrecisionEngine implements MiniGame {
     this.levelConfig = getLevelConfig(this.level);
     this.levelTimeRemaining = this.levelConfig.levelDuration;
     this.lastCountdownSecond = Math.ceil(this.levelTimeRemaining / 1000);
+    // Pause the game loop — React will show a level transition screen
+    // and call resume() when the player clicks to continue
+    this.gameLoop.pause();
     this.emit('levelUp', { level: this.level });
     this.emit('countdown', { timeRemaining: this.levelTimeRemaining / 1000 });
   }

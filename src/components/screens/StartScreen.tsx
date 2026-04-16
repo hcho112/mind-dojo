@@ -7,10 +7,11 @@ interface StartScreenProps {
   gameName: string;
   gameSlug: string;
   onStart: () => void;
+  onMenuOpen: () => void;
   visible: boolean;
 }
 
-export function StartScreen({ gameName, gameSlug, onStart, visible }: StartScreenProps) {
+export function StartScreen({ gameName, gameSlug, onStart, onMenuOpen, visible }: StartScreenProps) {
   const [stats, setStats] = useState<BestStats | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -32,37 +33,55 @@ export function StartScreen({ gameName, gameSlug, onStart, visible }: StartScree
   };
 
   return (
-    <div
-      className="absolute inset-0 z-20 flex flex-col items-center justify-center
-        bg-[var(--bg)]/90 backdrop-blur-sm cursor-pointer"
-      onClick={onStart}
-    >
-      <h1 className="text-4xl font-bold text-[var(--text)] mb-8">{gameName}</h1>
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center
+      bg-[var(--bg)]/90 backdrop-blur-sm">
+      {/* Menu button — top left */}
+      <div className="absolute top-4 left-4">
+        <button
+          onClick={onMenuOpen}
+          className="p-2 rounded-lg
+            bg-black/10 dark:bg-white/10
+            hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
+          aria-label="Open menu"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" className="text-[var(--text)]">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
 
-      {loaded && (
-        <div className="flex gap-8 mb-12">
-          <div className="text-center">
-            <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Score</p>
-            <p className="text-2xl font-mono font-bold text-[var(--text)]">
-              {stats ? stats.bestScore.toLocaleString() : '—'}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Level</p>
-            <p className="text-2xl font-mono font-bold text-[var(--text)]">
-              {stats ? stats.bestLevel : '—'}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Last Time</p>
-            <p className="text-2xl font-mono font-bold text-[var(--text)]">
-              {stats ? formatTime(stats.lastTimeOfDeath) : '—'}
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Main content — clickable to start */}
+      <div className="cursor-pointer" onClick={onStart}>
+        <h1 className="text-4xl font-bold text-[var(--text)] mb-8 text-center">{gameName}</h1>
 
-      <p className="text-lg text-[var(--text-muted)] animate-pulse">Click anywhere to start</p>
+        {loaded && (
+          <div className="flex gap-8 mb-12">
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Score</p>
+              <p className="text-2xl font-mono font-bold text-[var(--text)]">
+                {stats ? stats.bestScore.toLocaleString() : '—'}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Level</p>
+              <p className="text-2xl font-mono font-bold text-[var(--text)]">
+                {stats ? stats.bestLevel : '—'}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Last Time</p>
+              <p className="text-2xl font-mono font-bold text-[var(--text)]">
+                {stats ? formatTime(stats.lastTimeOfDeath) : '—'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <p className="text-lg text-[var(--text-muted)] animate-pulse text-center">Click to start</p>
+      </div>
     </div>
   );
 }
