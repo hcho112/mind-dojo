@@ -14,7 +14,15 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getTheme);
+  // Always start with 'dark' to match server render and avoid hydration mismatch.
+  // Sync from localStorage after mount.
+  const [theme, setThemeState] = useState<Theme>('dark');
+
+  useEffect(() => {
+    const stored = getTheme();
+    setThemeState(stored);
+    document.documentElement.classList.toggle('dark', stored === 'dark');
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
