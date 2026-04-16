@@ -1,3 +1,6 @@
+import { redirect } from 'next/navigation';
+import { DEFAULT_GAME } from '@/games/registry';
+
 export default function Home() {
-  return <div>Mind Dojo</div>;
+  redirect(`/game/${DEFAULT_GAME}`);
 }
