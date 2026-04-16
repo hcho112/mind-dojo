@@ -26,7 +26,6 @@ export class TargetPrecisionEngine implements MiniGame {
   private running: boolean = false;
   private gameOver: boolean = false;
 
-  private hitEffects: { x: number; y: number; age: number }[] = [];
   private vignetteIntensity: number = 0;
 
   private listeners: EventListeners = {
@@ -102,7 +101,6 @@ export class TargetPrecisionEngine implements MiniGame {
     this.level = 1;
     this.running = false;
     this.gameOver = false;
-    this.hitEffects = [];
     this.vignetteIntensity = 0;
     this.pool.releaseAll();
   }
@@ -183,7 +181,6 @@ export class TargetPrecisionEngine implements MiniGame {
 
       this.score += points;
       this.emit('scoreChanged', { score: this.score });
-      this.hitEffects.push({ x: closestTarget.x, y: closestTarget.y, age: 0 });
       this.pool.release(closestTarget);
     }
   };
@@ -219,16 +216,11 @@ export class TargetPrecisionEngine implements MiniGame {
     if (this.vignetteIntensity > 0) {
       this.vignetteIntensity = Math.max(0, this.vignetteIntensity - deltaTime / 500);
     }
-    for (let i = this.hitEffects.length - 1; i >= 0; i--) {
-      this.hitEffects[i].age += deltaTime;
-      if (this.hitEffects[i].age > 300) { this.hitEffects.splice(i, 1); }
-    }
   }
 
   private render(): void {
     this.renderer.clear();
     this.renderer.drawTargets(this.pool.activeTargets);
-    for (const effect of this.hitEffects) { this.renderer.drawHitEffect(effect.x, effect.y); }
     this.renderer.drawLifeLostVignette(this.vignetteIntensity);
   }
 

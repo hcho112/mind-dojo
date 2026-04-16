@@ -102,7 +102,7 @@ export class TargetPrecisionRenderer {
 
     // Countdown number
     this.ctx.fillStyle = bullseyeColor;
-    this.ctx.font = 'bold 16px monospace';
+    this.ctx.font = 'bold 11px monospace';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText(String(target.countdownNumber), x, y);
@@ -112,13 +112,6 @@ export class TargetPrecisionRenderer {
     for (const target of targets) {
       this.drawTarget(target);
     }
-  }
-
-  drawHitEffect(x: number, y: number): void {
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, GAME_DEFAULTS.outerRadius, 0, Math.PI * 2);
-    this.ctx.fillStyle = gameColors.hitFeedback + '33';
-    this.ctx.fill();
   }
 
   drawLifeLostVignette(intensity: number): void {
