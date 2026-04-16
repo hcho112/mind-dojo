@@ -43,6 +43,7 @@ export class TargetPrecisionEngine implements MiniGame {
     this.gameLoop = new GameLoop(this.update);
     this.inputHandler = new InputHandler(canvas, this.handleClick);
     this.resetState();
+    this.renderer.clear();
     this.emit('ready', undefined);
   }
 
@@ -63,11 +64,18 @@ export class TargetPrecisionEngine implements MiniGame {
 
   resize(): void {
     this.renderer.setupCanvas();
+    if (!this.running) {
+      this.renderer.clear();
+    }
   }
 
   setTheme(theme: GameConfig['theme']): void {
     this.config = { ...this.config, theme };
     this.renderer.setTheme(theme);
+    // Repaint immediately so the canvas updates even when the game loop isn't running
+    if (!this.running) {
+      this.renderer.clear();
+    }
   }
 
   destroy(): void {
