@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { getGameEntry, DEFAULT_GAME } from '@/games/registry';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -9,6 +9,7 @@ import { openGameDB, saveResult } from '@/storage/gameStore';
 import { MenuDrawer } from '@/components/shell/MenuDrawer';
 import { GameHUD } from '@/components/shell/GameHUD';
 import { StartScreen } from '@/components/screens/StartScreen';
+import { GameSkeleton } from '@/components/screens/GameSkeleton';
 import { GAME_DEFAULTS } from '@/games/target-precision/config';
 import type { GameComponentProps } from '@/games/registry';
 import type { ComponentType } from 'react';
@@ -22,21 +23,39 @@ function useGameComponent(slug: string) {
   );
 
   useEffect(() => {
-    if (gameComponents[slug]) {
-      setComponent(() => gameComponents[slug]);
-      return;
-    }
-
     const entry = getGameEntry(slug);
     if (!entry) return;
 
+    if (gameComponents[slug]) {
+      // Already cached — no setState needed, initial state handles it
+      return;
+    }
+
+    let cancelled = false;
     entry.loader().then((mod) => {
+      if (cancelled) return;
       gameComponents[slug] = mod.default;
-      setComponent(() => mod.default);
+      setComponent(mod.default);
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
-  return Component;
+  // Re-initialise when slug changes and component is already cached
+  const cached = gameComponents[slug] || null;
+  const resolved = Component ?? cached;
+
+  return resolved;
+}
+
+interface GameSectionProps extends GameComponentProps {
+  GameComponent: ComponentType<GameComponentProps>;
+}
+
+function GameSection({ GameComponent, ...props }: GameSectionProps) {
+  return <GameComponent {...props} />;
 }
 
 export default function GamePage() {
@@ -53,20 +72,23 @@ export default function GamePage() {
   const [level, setLevel] = useState<number>(1);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentSlug, setCurrentSlug] = useState(slug);
 
   const engineRef = useRef<{ pause: () => void; resume: () => void; start: () => void } | null>(null);
 
-  useEffect(() => {
-    setLastPlayedGame(slug);
-    openGameDB();
-  }, [slug]);
-
-  useEffect(() => {
+  // Reset game state when the slug changes (detected via derived state)
+  if (currentSlug !== slug) {
+    setCurrentSlug(slug);
     setGameState('idle');
     setScore(0);
     setLives(GAME_DEFAULTS.initialLives);
     setLevel(1);
     setTimeRemaining(0);
+  }
+
+  useEffect(() => {
+    setLastPlayedGame(slug);
+    openGameDB();
   }, [slug]);
 
   const handleStart = useCallback(() => {
@@ -100,6 +122,16 @@ export default function GamePage() {
     }
   }, [gameState]);
 
+  const gameProps = useMemo<Omit<GameSectionProps, 'GameComponent'>>(() => ({
+    theme,
+    onGameOver: handleGameOver,
+    onScoreChange: setScore,
+    onLivesChange: setLives,
+    onLevelChange: setLevel,
+    onCountdown: setTimeRemaining,
+    engineRef,
+  }), [theme, handleGameOver]);
+
   if (!gameEntry) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -110,16 +142,10 @@ export default function GamePage() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
+      {!GameComponent && <GameSkeleton />}
+
       {GameComponent && (
-        <GameComponent
-          theme={theme}
-          onGameOver={handleGameOver}
-          onScoreChange={setScore}
-          onLivesChange={setLives}
-          onLevelChange={setLevel}
-          onCountdown={setTimeRemaining}
-          engineRef={engineRef}
-        />
+        <GameSection GameComponent={GameComponent} {...gameProps} />
       )}
 
       <GameHUD

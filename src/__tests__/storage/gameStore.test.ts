@@ -1,13 +1,13 @@
 // @vitest-environment node
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import 'fake-indexeddb/auto';
+import { IDBFactory } from 'fake-indexeddb';
 import { saveResult, getBestStats, getHistory, resetDB } from '@/storage/gameStore';
 import type { GameResult } from '@/engine/types';
 
 beforeEach(() => {
   // Replace the global indexedDB with a fresh in-memory instance before each test
   // so tests don't share state. fake-indexeddb exports IDBFactory for this purpose.
-  const { IDBFactory } = require('fake-indexeddb');
   vi.stubGlobal('indexedDB', new IDBFactory());
   // Reset the module-level dbPromise so openGameDB() re-opens on the fresh instance
   resetDB();
