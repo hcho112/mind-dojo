@@ -100,25 +100,23 @@ export default function StatsPage() {
         </div>
       ) : (
         <div className="p-4 max-w-lg mx-auto">
-          {/* Game selector tabs */}
-          {gameStats.length > 1 && (
-            <div className="flex gap-2 mb-6 overflow-x-auto">
-              {gameStats.map(g => (
-                <button
-                  key={g.slug}
-                  onClick={() => setSelectedSlug(g.slug)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors
-                    ${selectedSlug === g.slug
-                      ? 'bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30'
-                      : 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)]'
-                    }`}
-                >
-                  <img src={g.icon} alt="" width={20} height={20} className="rounded" />
-                  <span className="text-sm font-medium">{g.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Game selector */}
+          <div className="flex gap-2 mb-6 overflow-x-auto">
+            {gameStats.map(g => (
+              <button
+                key={g.slug}
+                onClick={() => setSelectedSlug(g.slug)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors
+                  ${selectedSlug === g.slug
+                    ? 'bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30'
+                    : 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)]'
+                  }`}
+              >
+                <img src={g.icon} alt="" width={24} height={24} className="rounded" />
+                <span className="text-sm font-medium">{g.name}</span>
+              </button>
+            ))}
+          </div>
 
           {selected && (
             <>
