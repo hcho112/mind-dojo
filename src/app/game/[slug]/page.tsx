@@ -121,8 +121,11 @@ export default function GamePage() {
     setLives(GAME_DEFAULTS.initialLives);
     setLevel(startLevel);
     engineRef.current?.start(startLevel);
-    audioManager.playBgMusic();
-  }, []);
+    const entry = getGameEntry(slug);
+    if (!entry?.disableBgMusic) {
+      audioManager.playBgMusic();
+    }
+  }, [slug]);
 
   const handleGameOver = useCallback((result: { score: number; level: number; timeOfDeath: number }) => {
     audioManager.stopBgMusic();
@@ -174,8 +177,11 @@ export default function GamePage() {
   const handleResume = useCallback(() => {
     setGameState('playing');
     engineRef.current?.resume();
-    audioManager.playBgMusic();
-  }, []);
+    const entry = getGameEntry(slug);
+    if (!entry?.disableBgMusic) {
+      audioManager.playBgMusic();
+    }
+  }, [slug]);
 
   const handleToggleSound = useCallback(() => {
     const next = !soundEnabled;
@@ -183,12 +189,13 @@ export default function GamePage() {
     setSoundEnabled(next);
     audioManager.musicEnabled = next;
     audioManager.sfxEnabled = next;
-    if (next && gameState === 'playing') {
+    const entry = getGameEntry(slug);
+    if (next && gameState === 'playing' && !entry?.disableBgMusic) {
       audioManager.playBgMusic();
     } else if (!next) {
       audioManager.pauseBgMusic();
     }
-  }, [soundEnabled, gameState]);
+  }, [soundEnabled, gameState, slug]);
 
   const handleMenuOpen = useCallback(() => {
     stateBeforeMenuRef.current = gameState;
