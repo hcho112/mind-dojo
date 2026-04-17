@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createDecks, shuffle, cardEquals, cardToString } from './CardDeck';
 import Carousel from './Carousel';
+import PlayingCard from './Card';
 import SuitValuePicker from './SuitValuePicker';
 import { SUIT_SYMBOLS } from './config';
 import type { Card, Suit, Value } from './config';
@@ -33,6 +34,8 @@ export default function CardRecallGame({
   const [paused, setPaused] = useState(false);
   const [pickerDisabled, setPickerDisabled] = useState(false);
   const [feedbackFlash, setFeedbackFlash] = useState<'correct' | 'wrong' | null>(null);
+  const [pickerResetKey, setPickerResetKey] = useState(0);
+  const [revealedCard, setRevealedCard] = useState<Card | null>(null);
 
   const deckCountRef = useRef(1);
   const scoreRef = useRef(0);
@@ -67,6 +70,8 @@ export default function CardRecallGame({
     setPaused(false);
     setPickerDisabled(false);
     setFeedbackFlash(null);
+    setPickerResetKey(0);
+    setRevealedCard(null);
 
     onScoreChange(0);
     onLevelChange(count);
@@ -112,23 +117,30 @@ export default function CardRecallGame({
       onScoreChange(newScore);
       audioManager.playSfx('pop');
 
-      // Green flash feedback
+      // Show the revealed card with animation
+      setRevealedCard(expected);
       setFeedbackFlash('correct');
-      setTimeout(() => setFeedbackFlash(null), 300);
+
+      // Reset picker selections
+      setPickerResetKey(prev => prev + 1);
 
       const nextIndex = idx + 1;
       currentIndexRef.current = nextIndex;
-      setCurrentIndex(nextIndex);
 
-      if (nextIndex >= seq.length) {
-        // Perfect run
-        setPerfectRun(true);
-        setGamePhase('gameover');
-        onGameOver({ score: newScore, level: deckCountRef.current, timeOfDeath: 0 });
-      }
+      // After reveal animation, advance to next card
+      setTimeout(() => {
+        setFeedbackFlash(null);
+        setRevealedCard(null);
+        setCurrentIndex(nextIndex);
 
-      // Allow next guess after brief delay
-      setTimeout(() => { guessInProgressRef.current = false; }, 150);
+        if (nextIndex >= seq.length) {
+          setPerfectRun(true);
+          setGamePhase('gameover');
+          onGameOver({ score: newScore, level: deckCountRef.current, timeOfDeath: 0 });
+        }
+
+        guessInProgressRef.current = false;
+      }, 600);
     } else {
       // Wrong guess
       setPickerDisabled(true);
@@ -189,27 +201,53 @@ export default function CardRecallGame({
       {/* Recalling phase */}
       {gamePhase === 'recalling' && (
         <div className="flex flex-col w-full h-full">
-          {/* Card placeholder with feedback animation */}
+          {/* Card area */}
           <div className="flex-1 flex flex-col items-center justify-center px-4">
-            <div
-              className={`rounded-xl shadow-md flex items-center justify-center transition-all duration-150
-                ${feedbackFlash === 'correct' ? 'ring-4 ring-green-500 scale-105' : ''}
-                ${feedbackFlash === 'wrong' ? 'ring-4 ring-red-500 animate-[shake_0.3s_ease-in-out]' : ''}`}
-              style={{
-                width: '120px',
-                aspectRatio: '2.5 / 3.5',
-                background: 'linear-gradient(135deg, #4338ca, #7c3aed, #3730a3)',
-              }}
-            >
+            <div className="relative" style={{ width: '120px', perspective: '600px' }}>
+              {/* Card flip container */}
               <div
-                className="rounded-lg border-2 border-white/30 animate-pulse"
-                style={{ width: '80%', height: '80%' }}
-              />
+                className={`transition-all duration-500 ${feedbackFlash === 'wrong' ? 'animate-[shake_0.3s_ease-in-out]' : ''}`}
+                style={{
+                  transformStyle: 'preserve-3d',
+                  transform: revealedCard ? 'rotateY(180deg)' : 'rotateY(0deg)',
+                }}
+              >
+                {/* Front — card back (face down) */}
+                <div
+                  className="rounded-xl shadow-md flex items-center justify-center"
+                  style={{
+                    width: '120px',
+                    aspectRatio: '2.5 / 3.5',
+                    background: 'linear-gradient(135deg, #4338ca, #7c3aed, #3730a3)',
+                    backfaceVisibility: 'hidden',
+                  }}
+                >
+                  <div
+                    className="rounded-lg border-2 border-white/30 animate-pulse"
+                    style={{ width: '80%', height: '80%' }}
+                  />
+                </div>
+
+                {/* Back — revealed card (face up) */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backfaceVisibility: 'hidden',
+                    transform: 'rotateY(180deg)',
+                  }}
+                >
+                  {revealedCard && (
+                    <div className="ring-4 ring-green-500 rounded-xl" style={{ width: '120px' }}>
+                      <PlayingCard suit={revealedCard.suit} value={revealedCard.value} status="correct" />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Progress info — directly above the picker */}
-          <div className="flex items-center justify-between px-5 py-2"
+          {/* Progress info — centered above picker */}
+          <div className="flex items-center justify-center gap-6 px-5 py-2"
             style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
             <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
               Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
@@ -222,7 +260,7 @@ export default function CardRecallGame({
 
           {/* Picker */}
           <div className="w-full" style={{ paddingBottom: 'var(--safe-bottom)' }}>
-            <SuitValuePicker onSelect={handleGuess} disabled={pickerDisabled} />
+            <SuitValuePicker onSelect={handleGuess} disabled={pickerDisabled} resetKey={pickerResetKey} />
           </div>
         </div>
       )}

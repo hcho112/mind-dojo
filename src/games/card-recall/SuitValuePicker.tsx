@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SUITS, VALUES, SUIT_SYMBOLS, type Suit, type Value } from './config';
 
 interface SuitValuePickerProps {
   onSelect: (suit: Suit, value: Value) => void;
   disabled?: boolean;
+  resetKey?: number; // increment to reset selections (e.g. after correct guess)
 }
 
 const VALUE_ROWS: Value[][] = [
@@ -13,7 +14,6 @@ const VALUE_ROWS: Value[][] = [
   ['8', '9', '10', 'J', 'Q', 'K'],
 ];
 
-// Background tints for suit buttons
 const SUIT_BG: Record<Suit, string> = {
   hearts: 'rgba(220,38,38,0.12)',
   diamonds: 'rgba(220,38,38,0.12)',
@@ -21,18 +21,33 @@ const SUIT_BG: Record<Suit, string> = {
   clubs: 'rgba(26,26,46,0.10)',
 };
 
-export default function SuitValuePicker({ onSelect, disabled = false }: SuitValuePickerProps) {
+export default function SuitValuePicker({ onSelect, disabled = false, resetKey = 0 }: SuitValuePickerProps) {
   const [selectedSuit, setSelectedSuit] = useState<Suit | null>(null);
+  const [selectedValue, setSelectedValue] = useState<Value | null>(null);
+
+  // Reset both selections when resetKey changes (correct guess from parent)
+  useEffect(() => {
+    setSelectedSuit(null);
+    setSelectedValue(null);
+  }, [resetKey]);
+
+  // Auto-submit when both suit and value are selected
+  const trySubmit = useCallback((suit: Suit | null, value: Value | null) => {
+    if (suit && value && !disabled) {
+      onSelect(suit, value);
+    }
+  }, [onSelect, disabled]);
 
   function handleSuitPress(suit: Suit) {
     if (disabled) return;
     setSelectedSuit(suit);
+    trySubmit(suit, selectedValue);
   }
 
   function handleValuePress(value: Value) {
-    if (disabled || !selectedSuit) return;
-    onSelect(selectedSuit, value);
-    // Keep selectedSuit highlighted for subsequent guesses
+    if (disabled) return;
+    setSelectedValue(value);
+    trySubmit(selectedSuit, value);
   }
 
   const wrapperClass = disabled ? 'opacity-50 pointer-events-none' : '';
@@ -72,30 +87,31 @@ export default function SuitValuePicker({ onSelect, disabled = false }: SuitValu
         })}
       </div>
 
-      {/* Value grid */}
-      <div
-        className="flex flex-col gap-2"
-        style={{ opacity: selectedSuit ? 1 : 0.4, transition: 'opacity 0.15s' }}
-      >
+      {/* Value grid — always active, any order */}
+      <div className="flex flex-col gap-2">
         {VALUE_ROWS.map((row, rowIdx) => (
           <div key={rowIdx} className="flex gap-2">
-            {row.map((value) => (
-              <button
-                key={value}
-                onClick={() => handleValuePress(value)}
-                disabled={!selectedSuit}
-                className="flex-1 flex items-center justify-center rounded-xl font-semibold text-base transition-all active:scale-95"
-                style={{
-                  minHeight: '48px',
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--label)',
-                  cursor: selectedSuit ? 'pointer' : 'default',
-                }}
-              >
-                {value}
-              </button>
-            ))}
+            {row.map((value) => {
+              const isSelected = selectedValue === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => handleValuePress(value)}
+                  className="flex-1 flex items-center justify-center rounded-xl font-semibold text-base transition-all active:scale-95"
+                  style={{
+                    minHeight: '48px',
+                    background: 'var(--surface)',
+                    border: isSelected
+                      ? '2px solid var(--accent)'
+                      : '1px solid var(--border)',
+                    color: 'var(--label)',
+                    opacity: isSelected ? 1 : 0.75,
+                  }}
+                >
+                  {value}
+                </button>
+              );
+            })}
           </div>
         ))}
       </div>
