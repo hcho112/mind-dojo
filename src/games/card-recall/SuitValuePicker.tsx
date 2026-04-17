@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { SUITS, VALUES, SUIT_SYMBOLS, SUIT_COLORS, type Suit, type Value } from './config';
+import { SUITS, VALUES, SUIT_SYMBOLS, type Suit, type Value } from './config';
 
 interface SuitValuePickerProps {
   onSelect: (suit: Suit, value: Value) => void;
@@ -61,7 +61,7 @@ export default function SuitValuePicker({ onSelect, disabled = false }: SuitValu
                   ? '2px solid var(--accent)'
                   : '2px solid transparent',
                 opacity: isSelected ? 1 : 0.55,
-                color: SUIT_COLORS[suit],
+                color: (suit === 'hearts' || suit === 'diamonds') ? '#dc2626' : 'var(--label)',
               }}
               aria-label={suit}
               aria-pressed={isSelected}
