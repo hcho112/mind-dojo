@@ -7,22 +7,22 @@ interface DataPoint {
 
 interface LineChartProps {
   data: DataPoint[];
-  height?: number;
   color?: string;
   title: string;
 }
 
-export function LineChart({ data, height = 150, color = 'var(--accent)', title }: LineChartProps) {
+export function LineChart({ data, color = 'var(--accent)', title }: LineChartProps) {
   if (data.length === 0) {
     return (
       <div className="text-center text-sm text-[var(--text-muted)] py-8">No data yet</div>
     );
   }
 
-  const padding = { top: 20, right: 16, bottom: 32, left: 48 };
-  const width = 100; // percentage-based, SVG viewBox handles scaling
-  const chartW = width - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
+  const viewW = 400;
+  const viewH = 160;
+  const padding = { top: 16, right: 12, bottom: 28, left: 44 };
+  const chartW = viewW - padding.left - padding.right;
+  const chartH = viewH - padding.top - padding.bottom;
 
   const values = data.map(d => d.value);
   const maxVal = Math.max(...values);
@@ -37,28 +37,26 @@ export function LineChart({ data, height = 150, color = 'var(--accent)', title }
 
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
-  // Area fill under the line
-  const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
-
-  // Y-axis labels (3 ticks)
+  // Y-axis: 3 ticks
   const yTicks = [minVal, minVal + range / 2, maxVal].map(v => ({
     value: Math.round(v),
     y: padding.top + chartH - ((v - minVal) / range) * chartH,
   }));
 
-  // X-axis labels (first, middle, last)
-  const xIndices = data.length <= 3
-    ? data.map((_, i) => i)
-    : [0, Math.floor(data.length / 2), data.length - 1];
+  // X-axis: up to 5 evenly spaced labels
+  const labelCount = Math.min(data.length, 5);
+  const xIndices: number[] = [];
+  for (let i = 0; i < labelCount; i++) {
+    xIndices.push(Math.round((i / (labelCount - 1)) * (data.length - 1)));
+  }
+  if (data.length === 1) xIndices.splice(0, xIndices.length, 0);
 
   return (
-    <div className="mb-6">
+    <div className="mb-5">
       <h3 className="text-sm font-medium text-[var(--text-muted)] mb-2">{title}</h3>
       <svg
-        viewBox={`0 0 ${width} ${height}`}
-        preserveAspectRatio="none"
+        viewBox={`0 0 ${viewW} ${viewH}`}
         className="w-full rounded-lg bg-[var(--surface)] border border-[var(--border)]"
-        style={{ height: `${height}px` }}
       >
         {/* Grid lines */}
         {yTicks.map((tick, i) => (
@@ -69,29 +67,26 @@ export function LineChart({ data, height = 150, color = 'var(--accent)', title }
             x2={padding.left + chartW}
             y2={tick.y}
             stroke="var(--border)"
-            strokeWidth="0.3"
+            strokeWidth="0.5"
           />
         ))}
 
-        {/* Area fill */}
-        <path d={areaPath} fill={color} opacity="0.1" />
-
         {/* Line */}
-        <path d={linePath} fill="none" stroke={color} strokeWidth="1.2" strokeLinejoin="round" />
+        <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
 
         {/* Dots */}
         {points.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="1.5" fill={color} />
+          <circle key={i} cx={p.x} cy={p.y} r="3" fill={color} />
         ))}
 
         {/* Y-axis labels */}
         {yTicks.map((tick, i) => (
           <text
             key={i}
-            x={padding.left - 4}
-            y={tick.y + 1}
+            x={padding.left - 6}
+            y={tick.y + 4}
             textAnchor="end"
-            fontSize="5"
+            fontSize="10"
             fill="var(--text-muted)"
           >
             {tick.value.toLocaleString()}
@@ -103,9 +98,9 @@ export function LineChart({ data, height = 150, color = 'var(--accent)', title }
           <text
             key={idx}
             x={points[idx].x}
-            y={padding.top + chartH + 10}
+            y={viewH - 4}
             textAnchor="middle"
-            fontSize="4"
+            fontSize="9"
             fill="var(--text-muted)"
           >
             {data[idx].label}

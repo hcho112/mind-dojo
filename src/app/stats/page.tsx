@@ -75,22 +75,6 @@ export default function StatsPage() {
       value: r.score,
     })) ?? [];
 
-  const levelData = selected?.history
-    .slice()
-    .reverse()
-    .map(r => ({
-      label: formatDate(r.timestamp),
-      value: r.level,
-    })) ?? [];
-
-  const timeData = selected?.history
-    .slice()
-    .reverse()
-    .map(r => ({
-      label: formatDate(r.timestamp),
-      value: r.timeOfDeath,
-    })) ?? [];
-
   return (
     <div className="h-dvh overflow-y-auto bg-[var(--bg)]"
       style={{ paddingBottom: 'var(--safe-bottom)' }}>
@@ -164,23 +148,11 @@ export default function StatsPage() {
                 </div>
               </div>
 
-              {/* Charts */}
+              {/* Score chart */}
               <LineChart
                 title="Score History"
                 data={scoreData}
                 color="#6366f1"
-              />
-
-              <LineChart
-                title="Level Reached"
-                data={levelData}
-                color="#22c55e"
-              />
-
-              <LineChart
-                title="Survival Time (seconds remaining)"
-                data={timeData}
-                color="#f59e0b"
               />
 
               {/* Recent games table */}
