@@ -8,6 +8,7 @@
   --accent: #4f46e5;
   --border: #e2e2ea;
   --label: #1a1a2e;
+  --card-bg: #ffffff;
 }
 
 .dark {
@@ -18,6 +19,7 @@
   --accent: #6366f1;
   --border: #2a2a3a;
   --label: #ffffff;
+  --card-bg: #d4d0c8;
 }
 
 :root {

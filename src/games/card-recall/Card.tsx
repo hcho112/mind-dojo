@@ -102,7 +102,7 @@ export default function Card({
       ? 'border-2 border-green-500'
       : status === 'wrong'
       ? 'border-2 border-red-500'
-      : 'border border-gray-200 dark:border-gray-700';
+      : 'border border-gray-200 dark:border-[#b8b4ac]';
 
   return (
     <div className="flex flex-col items-center">
@@ -118,7 +118,7 @@ export default function Card({
             />
           </div>
         ) : (
-          <div className="w-full h-full bg-white dark:bg-gray-50 flex flex-col p-2">
+          <div className="w-full h-full flex flex-col p-2" style={{ backgroundColor: 'var(--card-bg)' }}>
             {/* Top-left corner */}
             <div className="flex flex-col items-start leading-none" style={{ color: suitColor }}>
               <span className="font-bold text-lg leading-none">{value}</span>
