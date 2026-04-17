@@ -173,8 +173,10 @@ export class TargetPrecisionEngine implements MiniGame {
       if (dist < closestDist) { closestDist = dist; closestTarget = target; }
     }
 
-    if (closestTarget && closestDist <= dims.bullseyeRadius) {
-      const accuracyMultiplier = 1 - (closestDist / dims.bullseyeRadius);
+    if (closestTarget && closestDist <= closestTarget.currentOuterRadius(dims)) {
+      // Score based on distance: center = max points, edge of outer circle = minimum
+      const outerR = closestTarget.currentOuterRadius(dims);
+      const accuracyMultiplier = Math.max(0.1, 1 - (closestDist / outerR));
       const timeRatio = 1 - closestTarget.progress;
       const speedMultiplier = 0.5 + timeRatio * 0.5;
       const basePoints = GAME_DEFAULTS.basePoints * this.level;
