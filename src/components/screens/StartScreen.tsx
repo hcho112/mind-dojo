@@ -8,6 +8,7 @@ interface StartScreenProps {
   gameSlug: string;
   gameIcon: string;
   levelLabel?: string;
+  timeLabel?: string;
   alwaysShowLevelSelector?: boolean;
   onStart: (startLevel: number) => void;
   onMenuOpen: () => void;
@@ -15,7 +16,7 @@ interface StartScreenProps {
 }
 
 export function StartScreen({
-  gameName, gameSlug, gameIcon, levelLabel, alwaysShowLevelSelector,
+  gameName, gameSlug, gameIcon, levelLabel, timeLabel, alwaysShowLevelSelector,
   onStart, onMenuOpen, visible,
 }: StartScreenProps) {
   const [stats, setStats] = useState<BestStats | null>(null);
@@ -96,7 +97,7 @@ export function StartScreen({
               </p>
             </div>
             <div className="text-center">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Last Time</p>
+              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">{timeLabel || 'Last Time'}</p>
               <p className="text-lg sm:text-2xl font-mono font-bold text-[var(--text)]">
                 {stats ? formatTime(stats.lastTimeOfDeath) : '—'}
               </p>

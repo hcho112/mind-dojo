@@ -294,6 +294,7 @@ export default function GamePage() {
         gameSlug={slug}
         gameIcon={gameEntry.icon}
         levelLabel={gameEntry.levelLabel}
+        timeLabel={gameEntry.timeLabel}
         alwaysShowLevelSelector={gameEntry.alwaysShowLevelSelector}
         onStart={handleStart}
         onMenuOpen={handleMenuOpen}

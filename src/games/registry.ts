@@ -10,6 +10,7 @@ export interface GameEntry {
   hudLevelPrefix?: string; // HUD level prefix (e.g. "Deck" instead of "LV")
   hudShowTimer?: boolean; // whether to show the countdown timer in HUD
   disableBgMusic?: boolean; // auto-mute background music for focus-based games
+  timeLabel?: string; // label for time stat on start screen (e.g. "Recall Time" instead of "Last Time")
   alwaysShowLevelSelector?: boolean; // show level selector even at level 1
   loader: () => Promise<{ default: ComponentType<GameComponentProps> }>;
 }
@@ -42,6 +43,7 @@ export const registry: Record<string, GameEntry> = {
     hudLevelPrefix: 'Deck',
     hudShowTimer: false,
     disableBgMusic: true,
+    timeLabel: 'Recall Time',
     alwaysShowLevelSelector: true,
     loader: () => import('./card-recall'),
   },

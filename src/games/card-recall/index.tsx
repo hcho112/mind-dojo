@@ -98,6 +98,7 @@ export default function CardRecallGame({
   const [perfectRun, setPerfectRun] = useState(false);
   const [paused, setPaused] = useState(false);
   const [pickerDisabled, setPickerDisabled] = useState(false);
+  const recallStartTimeRef = useRef(0);
   const [feedbackFlash, setFeedbackFlash] = useState<'correct' | 'wrong' | null>(null);
   const [pickerResetKey, setPickerResetKey] = useState(0);
   const [revealedCard, setRevealedCard] = useState<Card | null>(null);
@@ -155,6 +156,7 @@ export default function CardRecallGame({
   }, [engineRef, startGame]);
 
   const handleReady = useCallback(() => {
+    recallStartTimeRef.current = Date.now();
     setGamePhase('recalling');
   }, []);
 
@@ -201,7 +203,8 @@ export default function CardRecallGame({
         if (nextIndex >= seq.length) {
           setPerfectRun(true);
           setGamePhase('gameover');
-          onGameOver({ score: newScore, level: deckCountRef.current, timeOfDeath: 0 });
+          const elapsedSeconds = Math.round((Date.now() - recallStartTimeRef.current) / 1000);
+          onGameOver({ score: newScore, level: deckCountRef.current, timeOfDeath: elapsedSeconds });
         }
 
         guessInProgressRef.current = false;
@@ -223,7 +226,8 @@ export default function CardRecallGame({
       setTimeout(() => {
         setFeedbackFlash(null);
         setGamePhase('gameover');
-        onGameOver({ score: scoreRef.current, level: deckCountRef.current, timeOfDeath: 0 });
+        const elapsedSeconds = Math.round((Date.now() - recallStartTimeRef.current) / 1000);
+        onGameOver({ score: scoreRef.current, level: deckCountRef.current, timeOfDeath: elapsedSeconds });
         guessInProgressRef.current = false;
       }, 500);
     }
