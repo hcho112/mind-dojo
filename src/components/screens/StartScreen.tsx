@@ -34,7 +34,8 @@ export function StartScreen({ gameName, gameSlug, onStart, onMenuOpen, visible }
 
   return (
     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center
-      bg-[var(--bg)]/90 backdrop-blur-sm">
+      bg-[var(--bg)]/90 backdrop-blur-sm"
+      style={{ paddingBottom: 'var(--safe-bottom)' }}>
       {/* Menu button — top left, 44px minimum touch target */}
       <div className="absolute top-4 left-4">
         <button

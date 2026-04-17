@@ -86,8 +86,11 @@ export default function TargetPrecisionGame({
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ touchAction: 'none' }}
+      className="absolute top-0 left-0 w-full"
+      style={{
+        touchAction: 'none',
+        height: 'calc(100% - var(--safe-bottom))',
+      }}
     />
   );
 }

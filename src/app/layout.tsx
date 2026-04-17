@@ -12,6 +12,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -21,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-[var(--bg)] text-[var(--text)] h-screen overflow-hidden">
+      <body className="bg-[var(--bg)] text-[var(--text)] h-dvh overflow-hidden">
         <ThemeProvider>
           {children}
         </ThemeProvider>

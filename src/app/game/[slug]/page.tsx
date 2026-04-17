@@ -213,7 +213,7 @@ export default function GamePage() {
   const isGameActive = gameState === 'playing' || gameState === 'paused' || gameState === 'levelTransition';
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden">
+    <div className="relative w-screen overflow-hidden" style={{ height: '100dvh' }}>
       {!GameComponent && <GameSkeleton />}
 
       {GameComponent && (

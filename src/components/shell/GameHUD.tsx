@@ -81,7 +81,8 @@ export function GameHUD({
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center p-4 gap-4">
+      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-4 px-4 pt-4"
+        style={{ paddingBottom: 'calc(1rem + var(--safe-bottom))' }}>
         <div className="flex gap-1">
           {Array.from({ length: maxLives }).map((_, i) => (
             <span
