@@ -6,12 +6,13 @@ import { getBestStats, type BestStats } from '@/storage/gameStore';
 interface StartScreenProps {
   gameName: string;
   gameSlug: string;
+  gameIcon: string;
   onStart: () => void;
   onMenuOpen: () => void;
   visible: boolean;
 }
 
-export function StartScreen({ gameName, gameSlug, onStart, onMenuOpen, visible }: StartScreenProps) {
+export function StartScreen({ gameName, gameSlug, gameIcon, onStart, onMenuOpen, visible }: StartScreenProps) {
   const [stats, setStats] = useState<BestStats | null>(null);
   const [loaded, setLoaded] = useState(false);
 
@@ -56,7 +57,10 @@ export function StartScreen({ gameName, gameSlug, onStart, onMenuOpen, visible }
 
       {/* Main content — clickable/tappable to start */}
       <div className="cursor-pointer px-6" onClick={onStart}>
-        <h1 className="text-2xl sm:text-4xl font-bold text-[var(--text)] mb-6 sm:mb-8 text-center">{gameName}</h1>
+        <div className="flex flex-col items-center mb-6 sm:mb-8">
+          <img src={gameIcon} alt="" width={72} height={72} className="mb-4 rounded-2xl" />
+          <h1 className="text-2xl sm:text-4xl font-bold text-[var(--text)] text-center">{gameName}</h1>
+        </div>
 
         {loaded && (
           <div className="flex gap-4 sm:gap-8 mb-8 sm:mb-12">

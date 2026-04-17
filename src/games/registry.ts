@@ -4,6 +4,7 @@ export interface GameEntry {
   name: string;
   slug: string;
   description: string;
+  icon: string;
   loader: () => Promise<{ default: ComponentType<GameComponentProps> }>;
 }
 
@@ -22,6 +23,7 @@ export const registry: Record<string, GameEntry> = {
     name: 'Target Precision',
     slug: 'target-precision',
     description: 'Hit the bullseye before time runs out',
+    icon: '/images/game-target-precision.svg',
     loader: () => import('./target-precision'),
   },
 };

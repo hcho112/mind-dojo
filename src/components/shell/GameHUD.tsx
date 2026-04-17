@@ -83,14 +83,16 @@ export function GameHUD({
 
       <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-4 px-4 pt-4"
         style={{ paddingBottom: 'calc(1rem + var(--safe-bottom))' }}>
-        <div className="flex gap-1">
+        <div className="flex gap-1.5">
           {Array.from({ length: maxLives }).map((_, i) => (
-            <span
+            <img
               key={i}
-              className={`text-xl transition-opacity ${i < lives ? 'opacity-100' : 'opacity-30'}`}
-            >
-              ❤️
-            </span>
+              src={i < lives ? '/images/heart.svg' : '/images/heart-empty.svg'}
+              alt={i < lives ? 'Life' : 'Lost life'}
+              width={22}
+              height={22}
+              className="transition-opacity"
+            />
           ))}
         </div>
 

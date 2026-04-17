@@ -267,6 +267,7 @@ export default function GamePage() {
       <StartScreen
         gameName={gameEntry.name}
         gameSlug={slug}
+        gameIcon={gameEntry.icon}
         onStart={handleStart}
         onMenuOpen={handleMenuOpen}
         visible={gameState === 'idle'}

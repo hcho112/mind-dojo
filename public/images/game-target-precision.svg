@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="ring1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#ef4444"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="95" fill="#16161f"/>
+  <!-- Outer gradient ring -->
+  <circle cx="100" cy="100" r="80" fill="none" stroke="url(#ring1)" stroke-width="6" opacity="0.8"/>
+  <!-- Middle ring -->
+  <circle cx="100" cy="100" r="55" fill="none" stroke="url(#ring1)" stroke-width="4" opacity="0.5"/>
+  <!-- Inner ring -->
+  <circle cx="100" cy="100" r="30" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+  <!-- Bullseye center -->
+  <circle cx="100" cy="100" r="12" fill="url(#glow)"/>
+  <circle cx="100" cy="100" r="6" fill="#ffffff"/>
+  <!-- Countdown number -->
+  <text x="100" y="106" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="16" fill="#ffffff" opacity="0">3</text>
+  <!-- Decorative particles -->
+  <circle cx="45" cy="55" r="3" fill="#22c55e" opacity="0.6"/>
+  <circle cx="155" cy="70" r="2" fill="#f59e0b" opacity="0.5"/>
+  <circle cx="60" cy="150" r="2.5" fill="#ef4444" opacity="0.5"/>
+  <circle cx="150" cy="145" r="2" fill="#22c55e" opacity="0.4"/>
+</svg>

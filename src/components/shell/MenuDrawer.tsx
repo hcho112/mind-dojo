@@ -65,7 +65,7 @@ export function MenuDrawer({ isOpen, onClose, currentSlug }: MenuDrawerProps) {
                     : 'text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5'
                   }`}
               >
-                <span className="text-lg">🎯</span>
+                <img src={game.icon} alt="" width={36} height={36} className="rounded-lg" />
                 <div>
                   <p className="font-medium">{game.name}</p>
                   <p className="text-xs text-[var(--text-muted)]">{game.description}</p>
