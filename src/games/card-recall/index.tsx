@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createDecks, shuffle, cardEquals, cardToString } from './CardDeck';
 import Carousel from './Carousel';
 import SuitValuePicker from './SuitValuePicker';
+import { SUIT_SYMBOLS } from './config';
 import type { Card, Suit, Value } from './config';
 import type { GameComponentProps } from '../registry';
+import { audioManager } from '@/engine/audio';
 
 type GamePhase = 'viewing' | 'recalling' | 'gameover';
 type CardStatus = 'default' | 'correct' | 'wrong';
@@ -30,13 +32,14 @@ export default function CardRecallGame({
   const [perfectRun, setPerfectRun] = useState(false);
   const [paused, setPaused] = useState(false);
   const [pickerDisabled, setPickerDisabled] = useState(false);
+  const [feedbackFlash, setFeedbackFlash] = useState<'correct' | 'wrong' | null>(null);
 
-  // Keep a ref to deckCount so engineRef callbacks have access without stale closures
   const deckCountRef = useRef(1);
   const scoreRef = useRef(0);
   const currentIndexRef = useRef(0);
   const sequenceRef = useRef<Card[]>([]);
   const cardStatusesRef = useRef<CardStatus[]>([]);
+  const guessInProgressRef = useRef(false); // guard against rapid double-tap
 
   // Sync refs with state
   useEffect(() => { sequenceRef.current = sequence; }, [sequence]);
@@ -52,6 +55,7 @@ export default function CardRecallGame({
 
     scoreRef.current = 0;
     currentIndexRef.current = 0;
+    guessInProgressRef.current = false;
 
     setSequence(deck);
     setCardStatuses(statuses);
@@ -61,6 +65,8 @@ export default function CardRecallGame({
     setPerfectRun(false);
     setGamePhase('viewing');
     setPaused(false);
+    setPickerDisabled(false);
+    setFeedbackFlash(null);
 
     onScoreChange(0);
     onLevelChange(count);
@@ -83,7 +89,9 @@ export default function CardRecallGame({
   }, []);
 
   const handleGuess = useCallback((suit: Suit, value: Value) => {
-    if (pickerDisabled) return;
+    // Guard against rapid double-tap and disabled state
+    if (pickerDisabled || guessInProgressRef.current) return;
+    guessInProgressRef.current = true;
 
     const seq = sequenceRef.current;
     const idx = currentIndexRef.current;
@@ -102,19 +110,27 @@ export default function CardRecallGame({
       scoreRef.current = newScore;
       setScore(newScore);
       onScoreChange(newScore);
+      audioManager.playSfx('pop');
+
+      // Green flash feedback
+      setFeedbackFlash('correct');
+      setTimeout(() => setFeedbackFlash(null), 300);
 
       const nextIndex = idx + 1;
       currentIndexRef.current = nextIndex;
       setCurrentIndex(nextIndex);
 
       if (nextIndex >= seq.length) {
-        // All cards guessed correctly — perfect run
+        // Perfect run
         setPerfectRun(true);
         setGamePhase('gameover');
         onGameOver({ score: newScore, level: deckCountRef.current, timeOfDeath: 0 });
       }
+
+      // Allow next guess after brief delay
+      setTimeout(() => { guessInProgressRef.current = false; }, 150);
     } else {
-      // Wrong guess — mark wrong and show game over
+      // Wrong guess
       setPickerDisabled(true);
 
       const newStatuses = [...cardStatusesRef.current];
@@ -122,16 +138,23 @@ export default function CardRecallGame({
       cardStatusesRef.current = newStatuses;
       setCardStatuses(newStatuses);
 
-      const guessStr = cardToString(guessCard);
+      const guessStr = `You said: ${SUIT_SYMBOLS[suit]}${value}`;
       setWrongGuessInfo({ index: idx, guess: guessStr });
-      setGamePhase('gameover');
-      onGameOver({ score: scoreRef.current, level: deckCountRef.current, timeOfDeath: 0 });
+
+      // Red flash + shake feedback, then transition to gameover
+      setFeedbackFlash('wrong');
+      setTimeout(() => {
+        setFeedbackFlash(null);
+        setGamePhase('gameover');
+        onGameOver({ score: scoreRef.current, level: deckCountRef.current, timeOfDeath: 0 });
+        guessInProgressRef.current = false;
+      }, 500);
     }
   }, [pickerDisabled, onScoreChange, onGameOver]);
 
   const handlePlayAgain = useCallback(() => {
-    // Signal the game page to return to idle/start screen
-    onGameOver({ score: scoreRef.current, level: deckCountRef.current, timeOfDeath: 0 });
+    // Signal the game page to return to idle — use timeOfDeath=-1 as sentinel
+    onGameOver({ score: 0, level: deckCountRef.current, timeOfDeath: -1 });
   }, [onGameOver]);
 
   // Nothing to render before first start
@@ -169,18 +192,20 @@ export default function CardRecallGame({
           {/* Progress info */}
           <div className="flex items-center justify-between px-5 py-3">
             <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-              Card <span className="font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>{currentIndex + 1}</span> of{' '}
-              <span className="font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>{sequence.length}</span>
+              Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
+              <span className="font-bold tabular-nums">{sequence.length}</span>
             </p>
             <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-              Score: <span className="font-bold tabular-nums" style={{ color: 'var(--foreground)' }}>{score}</span>
+              Score: <span className="font-bold tabular-nums">{score}</span>
             </p>
           </div>
 
-          {/* Card indicator area — shows the hidden card face being guessed */}
+          {/* Card placeholder with feedback animation */}
           <div className="flex-1 flex flex-col items-center justify-center px-4">
             <div
-              className="rounded-xl shadow-md flex items-center justify-center"
+              className={`rounded-xl shadow-md flex items-center justify-center transition-all duration-150
+                ${feedbackFlash === 'correct' ? 'ring-4 ring-green-500 scale-105' : ''}
+                ${feedbackFlash === 'wrong' ? 'ring-4 ring-red-500 animate-[shake_0.3s_ease-in-out]' : ''}`}
               style={{
                 width: '120px',
                 aspectRatio: '2.5 / 3.5',
@@ -188,14 +213,14 @@ export default function CardRecallGame({
               }}
             >
               <div
-                className="rounded-lg border-2 border-white/30"
+                className="rounded-lg border-2 border-white/30 animate-pulse"
                 style={{ width: '80%', height: '80%' }}
               />
             </div>
           </div>
 
-          {/* Picker — pinned to bottom */}
-          <div className="w-full">
+          {/* Picker */}
+          <div className="w-full" style={{ paddingBottom: 'var(--safe-bottom)' }}>
             <SuitValuePicker onSelect={handleGuess} disabled={pickerDisabled} />
           </div>
         </div>
@@ -208,7 +233,7 @@ export default function CardRecallGame({
             <p className="mb-2 text-xl font-bold text-red-500">Wrong!</p>
           )}
           <p className="mb-6 text-sm font-medium" style={{ color: 'var(--label)' }}>
-            Final score: <span className="font-bold" style={{ color: 'var(--foreground)' }}>{score}</span>
+            Cards recalled: <span className="font-bold">{score}</span> / {sequence.length}
           </p>
           <Carousel
             cards={sequence}
@@ -220,6 +245,16 @@ export default function CardRecallGame({
           />
         </div>
       )}
+
+      {/* Shake keyframe */}
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          50% { transform: translateX(6px); }
+          75% { transform: translateX(-6px); }
+        }
+      `}</style>
     </div>
   );
 }

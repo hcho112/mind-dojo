@@ -125,7 +125,6 @@ export default function GamePage() {
   }, []);
 
   const handleGameOver = useCallback((result: { score: number; level: number; timeOfDeath: number }) => {
-    setGameState('gameover');
     audioManager.stopBgMusic();
     saveResult(slug, {
       score: result.score,
@@ -133,17 +132,33 @@ export default function GamePage() {
       timeOfDeath: result.timeOfDeath,
       timestamp: Date.now(),
     });
-    gameOverTimerRef.current = setTimeout(() => {
-      setGameState('idle');
-      gameOverTimerRef.current = null;
-    }, 1500);
+
+    const entry = getGameEntry(slug);
+    if (entry?.selfManagedGameOver) {
+      // Game manages its own game-over screen — stay in 'playing' so the game component stays mounted
+      // Game will call onGameOver again with timeOfDeath=-1 to signal "return to idle"
+      if (result.timeOfDeath === -1) {
+        setGameState('idle');
+      }
+    } else {
+      setGameState('gameover');
+      gameOverTimerRef.current = setTimeout(() => {
+        setGameState('idle');
+        gameOverTimerRef.current = null;
+      }, 1500);
+    }
   }, [slug]);
 
   const handleLevelUp = useCallback((newLevel: number) => {
     setLevel(newLevel);
-    // Engine already paused itself in advanceLevel()
+    const entry = getGameEntry(slug);
+    if (entry?.selfManagedGameOver) {
+      // Turn-based games just report their level/deck count — no transition overlay
+      return;
+    }
+    // Real-time games: engine paused itself in advanceLevel()
     setGameState('levelTransition');
-  }, []);
+  }, [slug]);
 
   const handleContinueLevel = useCallback(() => {
     setGameState('playing');
@@ -268,6 +283,8 @@ export default function GamePage() {
         gameName={gameEntry.name}
         gameSlug={slug}
         gameIcon={gameEntry.icon}
+        levelLabel={gameEntry.levelLabel}
+        alwaysShowLevelSelector={gameEntry.alwaysShowLevelSelector}
         onStart={handleStart}
         onMenuOpen={handleMenuOpen}
         visible={gameState === 'idle'}

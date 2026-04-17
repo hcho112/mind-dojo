@@ -5,6 +5,9 @@ export interface GameEntry {
   slug: string;
   description: string;
   icon: string;
+  selfManagedGameOver?: boolean; // game handles its own game-over phase (no auto-transition to idle)
+  levelLabel?: string; // custom label for level selector (e.g. "Decks" instead of "Start Level")
+  alwaysShowLevelSelector?: boolean; // show level selector even at level 1
   loader: () => Promise<{ default: ComponentType<GameComponentProps> }>;
 }
 
@@ -31,6 +34,9 @@ export const registry: Record<string, GameEntry> = {
     slug: 'card-recall',
     description: 'Memorize the card sequence and recall it',
     icon: '/images/game-card-recall.svg',
+    selfManagedGameOver: true,
+    levelLabel: 'Decks',
+    alwaysShowLevelSelector: true,
     loader: () => import('./card-recall'),
   },
 };

@@ -34,13 +34,14 @@ export default function Carousel({
   // Auto-scroll to wrong card on mount (game-over replay)
   useEffect(() => {
     if (wrongGuess !== undefined) {
-      const target = cardRefs.current[wrongGuess.index];
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        setVisibleIndex(wrongGuess.index);
-      }
+      requestAnimationFrame(() => {
+        const target = cardRefs.current[wrongGuess.index];
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+          setVisibleIndex(wrongGuess.index);
+        }
+      });
     }
-    // Intentionally run only on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -57,12 +58,14 @@ export default function Carousel({
   function handleScroll() {
     const container = scrollContainerRef.current;
     if (!container) return;
-    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+    const containerRect = container.getBoundingClientRect();
+    const containerCenter = containerRect.left + containerRect.width / 2;
     let closest = 0;
     let closestDist = Infinity;
     cardRefs.current.forEach((el, i) => {
       if (!el) return;
-      const elCenter = el.offsetLeft + el.offsetWidth / 2;
+      const elRect = el.getBoundingClientRect();
+      const elCenter = elRect.left + elRect.width / 2;
       const dist = Math.abs(containerCenter - elCenter);
       if (dist < closestDist) {
         closestDist = dist;
@@ -76,7 +79,9 @@ export default function Carousel({
     <div className="flex flex-col items-center w-full">
       {/* Perfect run banner */}
       {perfectRun && (
-        <p className="mb-3 text-2xl font-bold text-green-500 tracking-wide">Perfect!</p>
+        <p className="mb-3 text-2xl font-bold text-green-500 tracking-wide animate-pulse">
+          Perfect!
+        </p>
       )}
 
       {/* Horizontal scroll container with snap */}
@@ -85,12 +90,11 @@ export default function Carousel({
         onScroll={handleScroll}
         className="w-full flex overflow-x-auto snap-x snap-mandatory"
         style={{
-          paddingLeft: 'calc(50% - 120px)',
-          paddingRight: 'calc(50% - 120px)',
+          paddingLeft: 'calc(50% - min(120px, 40vw))',
+          paddingRight: 'calc(50% - min(120px, 40vw))',
           gap: '16px',
           WebkitOverflowScrolling: 'touch',
           scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
         }}
       >
         {cards.map((card, i) => {
@@ -98,12 +102,12 @@ export default function Carousel({
           const isWrongCard = wrongGuess?.index === i;
           return (
             <div
-              key={i}
+              key={`${i}-${card.suit}-${card.value}`}
               ref={(el) => {
                 cardRefs.current[i] = el;
               }}
               className="snap-center flex-shrink-0"
-              style={{ width: '240px' }}
+              style={{ width: 'min(240px, 80vw)' }}
             >
               <PlayingCard
                 suit={card.suit}

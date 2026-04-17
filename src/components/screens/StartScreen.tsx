@@ -7,12 +7,17 @@ interface StartScreenProps {
   gameName: string;
   gameSlug: string;
   gameIcon: string;
+  levelLabel?: string;
+  alwaysShowLevelSelector?: boolean;
   onStart: (startLevel: number) => void;
   onMenuOpen: () => void;
   visible: boolean;
 }
 
-export function StartScreen({ gameName, gameSlug, gameIcon, onStart, onMenuOpen, visible }: StartScreenProps) {
+export function StartScreen({
+  gameName, gameSlug, gameIcon, levelLabel, alwaysShowLevelSelector,
+  onStart, onMenuOpen, visible,
+}: StartScreenProps) {
   const [stats, setStats] = useState<BestStats | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(1);
@@ -28,7 +33,10 @@ export function StartScreen({ gameName, gameSlug, gameIcon, onStart, onMenuOpen,
 
   if (!visible) return null;
 
-  const maxLevel = stats?.bestLevel ?? 1;
+  // For alwaysShowLevelSelector games, allow going beyond best level (e.g. pick any deck count)
+  const maxLevel = alwaysShowLevelSelector
+    ? Math.max(10, (stats?.bestLevel ?? 1) + 1)
+    : (stats?.bestLevel ?? 1);
 
   const formatTime = (seconds: number): string => {
     const m = Math.floor(seconds / 60);
@@ -96,8 +104,8 @@ export function StartScreen({ gameName, gameSlug, gameIcon, onStart, onMenuOpen,
           </div>
         )}
 
-        {/* Level selector — only show if player has reached level 2+ */}
-        {maxLevel > 1 && (
+        {/* Level selector */}
+        {(alwaysShowLevelSelector || maxLevel > 1) && (
           <div className="flex items-center gap-4 mb-6 sm:mb-8">
             <button
               onClick={handleLevelDown}
@@ -114,7 +122,7 @@ export function StartScreen({ gameName, gameSlug, gameIcon, onStart, onMenuOpen,
             </button>
 
             <div className="text-center min-w-[100px]">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-0.5">Start Level</p>
+              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{levelLabel || 'Start Level'}</p>
               <p className="text-2xl sm:text-3xl font-mono font-bold text-[var(--accent)]">{selectedLevel}</p>
             </div>
 
