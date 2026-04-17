@@ -75,10 +75,21 @@ export function MenuDrawer({ isOpen, onClose, currentSlug }: MenuDrawerProps) {
           </nav>
 
           <div className="border-t border-[var(--border)] p-3">
+            <Link
+              href="/stats"
+              onClick={onClose}
+              className="flex items-center gap-3 px-3 py-3 rounded-lg transition-colors
+                text-[var(--text)] hover:bg-black/5 dark:hover:bg-white/5"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-muted)]">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <span className="font-medium">Progress</span>
+            </Link>
             <ThemeToggle />
-            <div className="mt-2 px-3 py-2 rounded-lg opacity-50 cursor-not-allowed">
-              <span className="text-sm text-[var(--text-muted)]">Options (coming soon)</span>
-            </div>
           </div>
         </div>
       </div>
