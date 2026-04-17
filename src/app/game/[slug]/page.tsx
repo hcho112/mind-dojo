@@ -251,6 +251,7 @@ export default function GamePage() {
         levelPrefix={gameEntry?.hudLevelPrefix}
         timeRemaining={timeRemaining}
         showTimer={gameEntry?.hudShowTimer !== false}
+        showBottomBar={!gameEntry?.selfManagedGameOver}
         soundEnabled={soundEnabled}
         onMenuOpen={handleMenuOpen}
         onPause={handlePause}
