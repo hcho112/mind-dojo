@@ -246,16 +246,18 @@ export default function CardRecallGame({
             </div>
           </div>
 
-          {/* Progress info — centered above picker */}
-          <div className="flex items-center justify-center gap-6 px-5 py-2"
-            style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
-            <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-              Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
-              <span className="font-bold tabular-nums">{sequence.length}</span>
-            </p>
-            <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-              Score: <span className="font-bold tabular-nums">{score}</span>
-            </p>
+          {/* Progress info — centered pill above picker */}
+          <div className="flex justify-center" style={{ paddingBottom: '10px' }}>
+            <div className="inline-flex items-center gap-4 px-4 py-1.5 rounded-full"
+              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
+                Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
+                <span className="font-bold tabular-nums">{sequence.length}</span>
+              </p>
+              <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
+                Score: <span className="font-bold tabular-nums">{score}</span>
+              </p>
+            </div>
           </div>
 
           {/* Picker */}
