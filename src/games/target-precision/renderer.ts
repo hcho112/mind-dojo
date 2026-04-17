@@ -1,5 +1,5 @@
 import { Target } from './entities';
-import { GAME_DEFAULTS } from './config';
+import { getScaledDimensions, type ScaledDimensions } from './config';
 import { lerpColor } from '@/engine/math';
 import { gameColors } from '@/theme/gameColors';
 import type { GameConfig } from '@/engine/types';
@@ -9,6 +9,7 @@ export class TargetPrecisionRenderer {
   private canvas: HTMLCanvasElement;
   private theme: GameConfig['theme'];
   private dpr: number;
+  private dims!: ScaledDimensions;
 
   // Pre-calculated gradient stops
   private gradientStops: string[] = [];
@@ -45,6 +46,7 @@ export class TargetPrecisionRenderer {
     this.canvas.width = rect.width * this.dpr;
     this.canvas.height = rect.height * this.dpr;
     this.ctx.scale(this.dpr, this.dpr);
+    this.dims = getScaledDimensions(this.width, this.height);
   }
 
   get width(): number {
@@ -53,6 +55,10 @@ export class TargetPrecisionRenderer {
 
   get height(): number {
     return this.canvas.height / this.dpr;
+  }
+
+  get scaledDimensions(): ScaledDimensions {
+    return this.dims;
   }
 
   clear(): void {
@@ -65,8 +71,8 @@ export class TargetPrecisionRenderer {
     if (!target.active) return;
 
     const { x, y } = target;
-    const outerR = target.currentOuterRadius;
-    const innerR = GAME_DEFAULTS.innerRadius;
+    const outerR = target.currentOuterRadius(this.dims);
+    const innerR = this.dims.innerRadius;
     const progress = target.progress;
 
     // Outer circle with gradient color
@@ -96,13 +102,13 @@ export class TargetPrecisionRenderer {
 
     // Bullseye dot (hit zone visual hint)
     this.ctx.beginPath();
-    this.ctx.arc(x, y, GAME_DEFAULTS.bullseyeRadius, 0, Math.PI * 2);
+    this.ctx.arc(x, y, this.dims.bullseyeRadius, 0, Math.PI * 2);
     this.ctx.fillStyle = bullseyeColor + '44';
     this.ctx.fill();
 
-    // Countdown number
+    // Countdown number — font scales with target
     this.ctx.fillStyle = bullseyeColor;
-    this.ctx.font = 'bold 11px monospace';
+    this.ctx.font = `bold ${Math.round(this.dims.countdownFontSize)}px monospace`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
     this.ctx.fillText(String(target.countdownNumber), x, y);

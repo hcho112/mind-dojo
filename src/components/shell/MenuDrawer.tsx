@@ -33,7 +33,7 @@ export function MenuDrawer({ isOpen, onClose, currentSlug }: MenuDrawerProps) {
 
       <div
         ref={drawerRef}
-        className={`fixed top-0 left-0 h-full w-72 z-50
+        className={`fixed top-0 left-0 h-full w-full max-w-72 z-50
           bg-[var(--surface)] border-r border-[var(--border)]
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
@@ -43,7 +43,7 @@ export function MenuDrawer({ isOpen, onClose, currentSlug }: MenuDrawerProps) {
             <h2 className="text-lg font-bold text-[var(--text)]">Mind Dojo</h2>
             <button
               onClick={onClose}
-              className="p-1 rounded hover:bg-black/10 dark:hover:bg-white/10"
+              className="p-3 rounded hover:bg-black/10 dark:hover:bg-white/10"
               aria-label="Close menu"
             >
               <span className="text-xl text-[var(--text)]">✕</span>

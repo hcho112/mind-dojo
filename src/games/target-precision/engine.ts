@@ -71,7 +71,6 @@ export class TargetPrecisionEngine implements MiniGame {
   setTheme(theme: GameConfig['theme']): void {
     this.config = { ...this.config, theme };
     this.renderer.setTheme(theme);
-    // Repaint immediately so the canvas updates even when the game loop isn't running
     if (!this.running) {
       this.renderer.clear();
     }
@@ -144,10 +143,11 @@ export class TargetPrecisionEngine implements MiniGame {
   }
 
   private findSpawnPosition(activeTargets: Target[]): { x: number; y: number } | null {
-    const padding = GAME_DEFAULTS.edgePadding;
+    const dims = this.renderer.scaledDimensions;
+    const padding = dims.edgePadding;
     const w = this.renderer.width;
     const h = this.renderer.height;
-    const minDist = GAME_DEFAULTS.minTargetDistance;
+    const minDist = dims.minTargetDistance;
 
     for (let attempt = 0; attempt < 50; attempt++) {
       const x = padding + Math.random() * (w - padding * 2);
@@ -163,6 +163,7 @@ export class TargetPrecisionEngine implements MiniGame {
 
   private handleClick = (x: number, y: number): void => {
     if (!this.running || this.gameOver) return;
+    const dims = this.renderer.scaledDimensions;
     const targets = this.pool.activeTargets;
     let closestTarget: Target | null = null;
     let closestDist = Infinity;
@@ -172,8 +173,8 @@ export class TargetPrecisionEngine implements MiniGame {
       if (dist < closestDist) { closestDist = dist; closestTarget = target; }
     }
 
-    if (closestTarget && closestDist <= GAME_DEFAULTS.bullseyeRadius) {
-      const accuracyMultiplier = 1 - (closestDist / GAME_DEFAULTS.bullseyeRadius);
+    if (closestTarget && closestDist <= dims.bullseyeRadius) {
+      const accuracyMultiplier = 1 - (closestDist / dims.bullseyeRadius);
       const timeRatio = 1 - closestTarget.progress;
       const speedMultiplier = 0.5 + timeRatio * 0.5;
       const basePoints = GAME_DEFAULTS.basePoints * this.level;
@@ -205,8 +206,6 @@ export class TargetPrecisionEngine implements MiniGame {
     this.levelConfig = getLevelConfig(this.level);
     this.levelTimeRemaining = this.levelConfig.levelDuration;
     this.lastCountdownSecond = Math.ceil(this.levelTimeRemaining / 1000);
-    // Pause the game loop — React will show a level transition screen
-    // and call resume() when the player clicks to continue
     this.gameLoop.pause();
     this.emit('levelUp', { level: this.level });
     this.emit('countdown', { timeRemaining: this.levelTimeRemaining / 1000 });

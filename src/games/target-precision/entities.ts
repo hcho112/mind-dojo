@@ -1,5 +1,5 @@
-import { GAME_DEFAULTS } from './config';
 import { lerp } from '@/engine/math';
+import type { ScaledDimensions } from './config';
 
 export class Target {
   x: number = 0;
@@ -25,8 +25,8 @@ export class Target {
     return Math.min(this.elapsed / this.duration, 1);
   }
 
-  get currentOuterRadius(): number {
-    return lerp(GAME_DEFAULTS.outerRadius, GAME_DEFAULTS.innerRadius, this.progress);
+  currentOuterRadius(dims: ScaledDimensions): number {
+    return lerp(dims.outerRadius, dims.innerRadius, this.progress);
   }
 
   get countdownNumber(): number {

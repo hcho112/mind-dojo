@@ -25,7 +25,7 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
         <div className="flex gap-2">
           <button
             onClick={onMenuOpen}
-            className="pointer-events-auto p-2 rounded-lg
+            className="pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
               bg-black/20 dark:bg-white/10 backdrop-blur-sm
               hover:bg-black/30 dark:hover:bg-white/20 transition-colors"
             aria-label="Open menu"
@@ -40,7 +40,7 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
 
           <button
             onClick={onPause}
-            className="pointer-events-auto p-2 rounded-lg
+            className="pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
               bg-black/20 dark:bg-white/10 backdrop-blur-sm
               hover:bg-black/30 dark:hover:bg-white/20 transition-colors"
             aria-label="Pause game"
@@ -55,12 +55,12 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
 
         {/* Center: timer */}
         <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-2xl font-mono font-bold text-[var(--label)]">{timeStr}</span>
+          <span className="text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">{timeStr}</span>
         </div>
 
         {/* Right: level */}
         <div className="px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-lg font-bold text-[var(--label)]">LV {level}</span>
+          <span className="text-sm sm:text-lg font-bold text-[var(--label)]">LV {level}</span>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
         </div>
 
         <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-2xl font-mono font-bold text-[var(--label)]">
+          <span className="text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">
             {score.toLocaleString()}
           </span>
         </div>

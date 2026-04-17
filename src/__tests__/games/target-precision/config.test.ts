@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { getLevelConfig, GAME_DEFAULTS } from '@/games/target-precision/config';
+import { getLevelConfig, getScaledDimensions, GAME_DEFAULTS } from '@/games/target-precision/config';
 
 describe('getLevelConfig', () => {
   it('returns level 1 config', () => {
@@ -33,7 +33,32 @@ describe('getLevelConfig', () => {
 
 describe('GAME_DEFAULTS', () => {
   it('has correct initial lives', () => { expect(GAME_DEFAULTS.initialLives).toBe(3); });
-  it('has bullseye hit radius', () => { expect(GAME_DEFAULTS.bullseyeRadius).toBe(8); });
-  it('has inner circle radius', () => { expect(GAME_DEFAULTS.innerRadius).toBe(15); });
-  it('has outer circle radius', () => { expect(GAME_DEFAULTS.outerRadius).toBe(60); });
+});
+
+describe('getScaledDimensions', () => {
+  it('scales dimensions relative to shorter canvas side', () => {
+    const dims = getScaledDimensions(800, 600);
+    // base = 600 (shorter side)
+    expect(dims.outerRadius).toBeCloseTo(600 * 0.15);
+    expect(dims.innerRadius).toBeCloseTo(600 * 0.04);
+    expect(dims.bullseyeRadius).toBeCloseTo(600 * 0.022);
+  });
+
+  it('enforces minimum values on very small screens', () => {
+    const dims = getScaledDimensions(200, 150);
+    expect(dims.outerRadius).toBeGreaterThanOrEqual(30);
+    expect(dims.innerRadius).toBeGreaterThanOrEqual(10);
+    expect(dims.bullseyeRadius).toBeGreaterThanOrEqual(6);
+    expect(dims.edgePadding).toBeGreaterThanOrEqual(40);
+    expect(dims.minTargetDistance).toBeGreaterThanOrEqual(60);
+    expect(dims.countdownFontSize).toBeGreaterThanOrEqual(8);
+  });
+
+  it('produces larger dimensions for larger screens', () => {
+    const small = getScaledDimensions(400, 300);
+    const large = getScaledDimensions(1920, 1080);
+    expect(large.outerRadius).toBeGreaterThan(small.outerRadius);
+    expect(large.innerRadius).toBeGreaterThan(small.innerRadius);
+    expect(large.bullseyeRadius).toBeGreaterThan(small.bullseyeRadius);
+  });
 });

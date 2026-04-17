@@ -213,8 +213,8 @@ export default function GamePage() {
           onClick={handleResume}
         >
           <div className="px-8 py-4 rounded-2xl bg-[var(--surface)]/90 backdrop-blur-md">
-            <h2 className="text-3xl font-bold text-[var(--text)] mb-2 text-center">Paused</h2>
-            <p className="text-[var(--text-muted)] text-center animate-pulse">Click to resume</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text)] mb-2 text-center">Paused</h2>
+            <p className="text-sm sm:text-base text-[var(--text-muted)] text-center animate-pulse">Tap to resume</p>
           </div>
         </div>
       )}
@@ -228,8 +228,8 @@ export default function GamePage() {
         >
           <div className="px-8 py-6 rounded-2xl bg-[var(--surface)]/90 backdrop-blur-md text-center">
             <p className="text-sm uppercase tracking-wider text-[var(--accent)] mb-1">Level Complete</p>
-            <h2 className="text-4xl font-bold text-[var(--text)] mb-4">Level {level}</h2>
-            <p className="text-[var(--text-muted)] animate-pulse">Click to continue</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text)] mb-4">Level {level}</h2>
+            <p className="text-sm sm:text-base text-[var(--text-muted)] animate-pulse">Tap to continue</p>
           </div>
         </div>
       )}

@@ -1,7 +1,10 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { Target, TargetPool } from '@/games/target-precision/entities';
-import { GAME_DEFAULTS } from '@/games/target-precision/config';
+import { getScaledDimensions } from '@/games/target-precision/config';
+
+// Use a fixed canvas size for predictable test values
+const dims = getScaledDimensions(800, 600);
 
 describe('Target', () => {
   it('initializes with correct properties', () => {
@@ -23,9 +26,9 @@ describe('Target', () => {
     const target = new Target();
     target.spawn(0, 0, 4000);
     target.elapsed = 0;
-    expect(target.currentOuterRadius).toBe(GAME_DEFAULTS.outerRadius);
+    expect(target.currentOuterRadius(dims)).toBeCloseTo(dims.outerRadius);
     target.elapsed = 4000;
-    expect(target.currentOuterRadius).toBeCloseTo(GAME_DEFAULTS.innerRadius);
+    expect(target.currentOuterRadius(dims)).toBeCloseTo(dims.innerRadius);
   });
   it('calculates countdown number', () => {
     const target = new Target();
