@@ -67,8 +67,8 @@ function MiniCardStrip({ cards }: { cards: Card[] }) {
       }}
     >
       {cards.map((card, i) => (
-        <div key={`${i}-${card.suit}-${card.value}`} className="flex-shrink-0" style={{ width: '48px' }}>
-          <PlayingCard suit={card.suit} value={card.value} status="correct" />
+        <div key={`${i}-${card.suit}-${card.value}`} className="flex-shrink-0" style={{ width: '36px' }}>
+          <PlayingCard suit={card.suit} value={card.value} status="correct" mini />
         </div>
       ))}
     </div>

@@ -7,6 +7,7 @@ interface PlayingCardProps {
   value: Value;
   status?: 'default' | 'correct' | 'wrong' | 'hidden';
   wrongGuess?: string;
+  mini?: boolean;
   className?: string;
 }
 
@@ -94,6 +95,7 @@ export default function Card({
   value,
   status = 'default',
   wrongGuess,
+  mini = false,
   className = '',
 }: PlayingCardProps) {
   const isRedSuit = suit === 'hearts' || suit === 'diamonds';
@@ -106,6 +108,21 @@ export default function Card({
       : status === 'wrong'
       ? 'border-2 border-red-500'
       : 'border border-gray-200 dark:border-[#6b6660]';
+
+  // Mini mode — compact value + suit only
+  if (mini) {
+    return (
+      <div
+        className={`rounded-lg overflow-hidden select-none flex items-center justify-center ${borderClass} ${className}`}
+        style={{ aspectRatio: '2.5 / 3.5', width: '100%', backgroundColor: 'var(--card-bg)' }}
+      >
+        <div className="flex flex-col items-center leading-none" style={{ color: suitColor }}>
+          <span className="font-bold" style={{ fontSize: 14 }}>{value}</span>
+          <SuitIcon suit={suit} size={14} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center">
