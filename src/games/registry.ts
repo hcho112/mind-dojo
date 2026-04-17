@@ -26,6 +26,13 @@ export const registry: Record<string, GameEntry> = {
     icon: '/images/game-target-precision.svg',
     loader: () => import('./target-precision'),
   },
+  'card-recall': {
+    name: 'Card Recall',
+    slug: 'card-recall',
+    description: 'Memorize the card sequence and recall it',
+    icon: '/images/game-card-recall.svg',
+    loader: () => import('./card-recall'),
+  },
 };
 
 export const DEFAULT_GAME = 'target-precision';
