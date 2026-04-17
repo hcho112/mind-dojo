@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!--
+    "Q" letter with small tiara/gem above
+    Tiara: arc with three gem points
+    Q: circle outline with tail stroke
+  -->
+  <g fill="currentColor">
+    <!-- Tiara arc base -->
+    <path d="M18 14 Q32 8 46 14 L46 18 Q32 12 18 18 Z"/>
+    <!-- Tiara left gem (small diamond) -->
+    <polygon points="21,14 24,9 27,14 24,17"/>
+    <!-- Tiara center gem (larger) -->
+    <polygon points="29,12 32,6 35,12 32,16"/>
+    <!-- Tiara right gem -->
+    <polygon points="37,14 40,9 43,14 40,17"/>
+
+    <!-- Q outer circle (thick ring) -->
+    <path d="
+      M32 22
+      C43.5 22 52 30.5 52 42
+      C52 53.5 43.5 62 32 62
+      C20.5 62 12 53.5 12 42
+      C12 30.5 20.5 22 32 22 Z
+      M32 29
+      C24.3 29 19 34.3 19 42
+      C19 49.7 24.3 55 32 55
+      C39.7 55 45 49.7 45 42
+      C45 34.3 39.7 29 32 29 Z
+    " fill-rule="evenodd"/>
+    <!-- Q tail stroke -->
+    <path d="M39 48 L51 60 L55 56 L43 44 Z" rx="1"/>
+  </g>
+</svg>

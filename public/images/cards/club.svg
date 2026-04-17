@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Club: three overlapping circles + stem -->
+  <!-- Top center circle -->
+  <circle cx="24" cy="14" r="8" fill="#1a1a2e"/>
+  <!-- Bottom-left circle -->
+  <circle cx="15" cy="27" r="8" fill="#1a1a2e"/>
+  <!-- Bottom-right circle -->
+  <circle cx="33" cy="27" r="8" fill="#1a1a2e"/>
+  <!-- Stem and base -->
+  <path d="M21 33 L21 39 L27 39 L27 33 Z" fill="#1a1a2e"/>
+  <!-- Wide base -->
+  <rect x="14" y="39" width="20" height="4" rx="2" fill="#1a1a2e"/>
+</svg>

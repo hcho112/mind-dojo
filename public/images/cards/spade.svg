@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Classic spade: inverted heart on top + stem/base -->
+  <path d="
+    M24 4
+    C24 4 6 18 6 28
+    C6 33.5 10.5 37 15.5 35.5
+    C13.5 38.5 12 41 10 44
+    L38 44
+    C36 41 34.5 38.5 32.5 35.5
+    C37.5 37 42 33.5 42 28
+    C42 18 24 4 24 4
+    Z
+  " fill="#1a1a2e"/>
+</svg>
