@@ -31,7 +31,7 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
             aria-label="Open menu"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" className="text-white">
+              strokeWidth="2" strokeLinecap="round" className="text-[var(--label)]">
               <line x1="3" y1="6" x2="21" y2="6" />
               <line x1="3" y1="12" x2="21" y2="12" />
               <line x1="3" y1="18" x2="21" y2="18" />
@@ -46,7 +46,7 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
             aria-label="Pause game"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" className="text-white">
+              strokeWidth="2" strokeLinecap="round" className="text-[var(--label)]">
               <line x1="8" y1="5" x2="8" y2="19" />
               <line x1="16" y1="5" x2="16" y2="19" />
             </svg>
@@ -55,12 +55,12 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
 
         {/* Center: timer */}
         <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-2xl font-mono font-bold text-white">{timeStr}</span>
+          <span className="text-2xl font-mono font-bold text-[var(--label)]">{timeStr}</span>
         </div>
 
         {/* Right: level */}
         <div className="px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-lg font-bold text-white">LV {level}</span>
+          <span className="text-lg font-bold text-[var(--label)]">LV {level}</span>
         </div>
       </div>
 
@@ -77,7 +77,7 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
         </div>
 
         <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-2xl font-mono font-bold text-white">
+          <span className="text-2xl font-mono font-bold text-[var(--label)]">
             {score.toLocaleString()}
           </span>
         </div>

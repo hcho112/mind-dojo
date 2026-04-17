@@ -6,6 +6,7 @@ export const palette = {
     textMuted: '#8888a0',
     accent: '#6366f1',
     border: '#2a2a3a',
+    label: '#ffffff',
   },
   light: {
     bg: '#f8f8fc',
@@ -14,6 +15,7 @@ export const palette = {
     textMuted: '#6b7280',
     accent: '#4f46e5',
     border: '#e2e2ea',
+    label: '#1a1a2e',
   },
 } as const;
 
