@@ -59,7 +59,7 @@ export default function SuitValuePicker({ onSelect, disabled = false }: SuitValu
                 background: SUIT_BG[suit],
                 border: isSelected
                   ? '2px solid var(--accent)'
-                  : '2px solid transparent',
+                  : '2px solid var(--border)',
                 opacity: isSelected ? 1 : 0.55,
                 color: (suit === 'hearts' || suit === 'diamonds') ? '#dc2626' : 'var(--label)',
               }}

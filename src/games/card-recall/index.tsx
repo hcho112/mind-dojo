@@ -189,17 +189,6 @@ export default function CardRecallGame({
       {/* Recalling phase */}
       {gamePhase === 'recalling' && (
         <div className="flex flex-col w-full h-full">
-          {/* Progress info */}
-          <div className="flex items-center justify-between px-5 py-3">
-            <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-              Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
-              <span className="font-bold tabular-nums">{sequence.length}</span>
-            </p>
-            <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-              Score: <span className="font-bold tabular-nums">{score}</span>
-            </p>
-          </div>
-
           {/* Card placeholder with feedback animation */}
           <div className="flex-1 flex flex-col items-center justify-center px-4">
             <div
@@ -217,6 +206,18 @@ export default function CardRecallGame({
                 style={{ width: '80%', height: '80%' }}
               />
             </div>
+          </div>
+
+          {/* Progress info — directly above the picker */}
+          <div className="flex items-center justify-between px-5 py-2"
+            style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
+            <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
+              Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
+              <span className="font-bold tabular-nums">{sequence.length}</span>
+            </p>
+            <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
+              Score: <span className="font-bold tabular-nums">{score}</span>
+            </p>
           </div>
 
           {/* Picker */}
