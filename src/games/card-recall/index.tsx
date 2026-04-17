@@ -56,12 +56,14 @@ function MiniCardStrip({ cards }: { cards: Card[] }) {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className="flex gap-1.5 overflow-x-auto select-none px-3 py-2"
+      className="flex gap-1.5 overflow-x-auto select-none px-2 py-2 rounded-xl"
       style={{
         cursor: 'grab',
         scrollbarWidth: 'none',
         WebkitOverflowScrolling: 'touch',
-        borderBottom: '1px solid var(--border)',
+        maxWidth: '85vw',
+        border: '1px solid var(--border)',
+        background: 'var(--surface)',
       }}
     >
       {cards.map((card, i) => (
@@ -264,13 +266,13 @@ export default function CardRecallGame({
       {/* Recalling phase */}
       {gamePhase === 'recalling' && (
         <div className="flex flex-col w-full h-full">
-          {/* Mini carousel of correctly guessed cards */}
-          {score > 0 && (
-            <MiniCardStrip cards={sequence.slice(0, currentIndex)} />
-          )}
+          {/* Card area — centers the mini strip + flip card together */}
+          <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4">
+            {/* Mini strip of correctly guessed cards — above the flip card */}
+            {score > 0 && (
+              <MiniCardStrip cards={sequence.slice(0, currentIndex)} />
+            )}
 
-          {/* Card area */}
-          <div className="flex-1 flex flex-col items-center justify-center px-4">
             <div className="relative" style={{ width: '120px', perspective: '600px' }}>
               {/* Card flip container */}
               <div
