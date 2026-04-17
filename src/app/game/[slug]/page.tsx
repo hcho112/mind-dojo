@@ -103,7 +103,7 @@ export default function GamePage() {
     audioManager.musicEnabled = enabled;
     audioManager.sfxEnabled = enabled;
     audioManager.preload('pop', '/sounds/pop.mp3');
-    audioManager.setSfxVolume('pop', 0.5);
+    audioManager.setSfxVolume('pop', 0.9);
     audioManager.initBgMusic('/sounds/bg-music.mp3', 0.3);
     return () => {
       audioManager.stopBgMusic();
