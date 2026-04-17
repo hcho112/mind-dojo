@@ -15,6 +15,7 @@ export type GameEventType =
   | 'levelUp'
   | 'gameOver'
   | 'countdown'
+  | 'comboChanged'
   | 'ready';
 
 export interface ScoreChangedEvent {
@@ -39,12 +40,17 @@ export interface CountdownEvent {
   timeRemaining: number;
 }
 
+export interface ComboChangedEvent {
+  combo: number;
+}
+
 export type GameEventPayload =
   | ScoreChangedEvent
   | LifeLostEvent
   | LevelUpEvent
   | GameOverEvent
   | CountdownEvent
+  | ComboChangedEvent
   | undefined;
 
 export type GameEventCallback = (payload: GameEventPayload) => void;

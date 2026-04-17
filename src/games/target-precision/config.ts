@@ -19,6 +19,8 @@ export interface ScaledDimensions {
   innerRadius: number;
   outerRadius: number;
   edgePadding: number;
+  topPadding: number;
+  bottomPadding: number;
   minTargetDistance: number;
   countdownFontSize: number;
 }
@@ -30,6 +32,8 @@ export function getScaledDimensions(canvasWidth: number, canvasHeight: number): 
     innerRadius: Math.max(10, base * RATIOS.innerRadius),
     outerRadius: Math.max(30, base * RATIOS.outerRadius),
     edgePadding: Math.max(40, base * RATIOS.edgePadding),
+    topPadding: Math.max(70, canvasHeight * 0.1),    // below HUD top bar
+    bottomPadding: Math.max(70, canvasHeight * 0.12), // above HUD bottom bar
     minTargetDistance: Math.max(60, base * RATIOS.minTargetDistance),
     countdownFontSize: Math.max(8, base * RATIOS.countdownFontSize),
   };

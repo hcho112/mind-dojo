@@ -4,27 +4,28 @@ import { useRef, useEffect } from 'react';
 import { TargetPrecisionEngine } from './engine';
 import type { GameComponentProps } from '../registry';
 import type {
-  ScoreChangedEvent, LifeLostEvent, LevelUpEvent, GameOverEvent, CountdownEvent, GameEventPayload,
+  ScoreChangedEvent, LifeLostEvent, LevelUpEvent, GameOverEvent, CountdownEvent, ComboChangedEvent, GameEventPayload,
 } from '@/engine/types';
 
 export default function TargetPrecisionGame({
-  theme, onGameOver, onScoreChange, onLivesChange, onLevelChange, onCountdown, engineRef,
+  theme, onGameOver, onScoreChange, onLivesChange, onLevelChange, onCountdown, onComboChange, engineRef,
 }: GameComponentProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineInstanceRef = useRef<TargetPrecisionEngine | null>(null);
 
-  // Keep callback refs fresh to avoid stale closures in engine event listeners
   const onGameOverRef = useRef(onGameOver);
   const onScoreChangeRef = useRef(onScoreChange);
   const onLivesChangeRef = useRef(onLivesChange);
   const onLevelChangeRef = useRef(onLevelChange);
   const onCountdownRef = useRef(onCountdown);
+  const onComboChangeRef = useRef(onComboChange);
 
   useEffect(() => { onGameOverRef.current = onGameOver; }, [onGameOver]);
   useEffect(() => { onScoreChangeRef.current = onScoreChange; }, [onScoreChange]);
   useEffect(() => { onLivesChangeRef.current = onLivesChange; }, [onLivesChange]);
   useEffect(() => { onLevelChangeRef.current = onLevelChange; }, [onLevelChange]);
   useEffect(() => { onCountdownRef.current = onCountdown; }, [onCountdown]);
+  useEffect(() => { onComboChangeRef.current = onComboChange; }, [onComboChange]);
 
   // Initialize engine once on mount, clean up on unmount
   useEffect(() => {
@@ -49,6 +50,9 @@ export default function TargetPrecisionGame({
     });
     engine.on('countdown', (p: GameEventPayload) => {
       onCountdownRef.current((p as CountdownEvent).timeRemaining);
+    });
+    engine.on('comboChanged', (p: GameEventPayload) => {
+      onComboChangeRef.current((p as ComboChangedEvent).combo);
     });
 
     engineRef.current = {

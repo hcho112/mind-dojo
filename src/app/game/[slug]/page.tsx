@@ -73,6 +73,7 @@ export default function GamePage() {
   const [level, setLevel] = useState<number>(1);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [combo, setCombo] = useState<number>(0);
   const [soundEnabled, setSoundEnabledState] = useState(true);
   const [currentSlug, setCurrentSlug] = useState(slug);
 
@@ -221,6 +222,7 @@ export default function GamePage() {
     onLivesChange: setLives,
     onLevelChange: handleLevelUp,
     onCountdown: setTimeRemaining,
+    onComboChange: setCombo,
     engineRef,
   }), [theme, handleGameOver, handleLevelUp]);
 
@@ -252,6 +254,7 @@ export default function GamePage() {
         timeRemaining={timeRemaining}
         showTimer={gameEntry?.hudShowTimer !== false}
         showBottomBar={!gameEntry?.selfManagedGameOver}
+        combo={combo}
         soundEnabled={soundEnabled}
         onMenuOpen={handleMenuOpen}
         onPause={handlePause}

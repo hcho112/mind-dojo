@@ -22,6 +22,7 @@ export interface GameComponentProps {
   onLivesChange: (lives: number) => void;
   onLevelChange: (level: number) => void;
   onCountdown: (timeRemaining: number) => void;
+  onComboChange: (combo: number) => void;
   engineRef: React.MutableRefObject<{ pause: () => void; resume: () => void; start: (startLevel?: number) => void } | null>;
 }
 

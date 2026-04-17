@@ -28,9 +28,10 @@ export class TargetPrecisionEngine implements MiniGame {
   private gameOver: boolean = false;
 
   private vignetteIntensity: number = 0;
+  private combo: number = 0;
 
   private listeners: EventListeners = {
-    scoreChanged: [], lifeLost: [], levelUp: [], gameOver: [], countdown: [], ready: [],
+    scoreChanged: [], lifeLost: [], levelUp: [], gameOver: [], countdown: [], comboChanged: [], ready: [],
   };
 
   private lastCountdownSecond: number = -1;
@@ -103,6 +104,7 @@ export class TargetPrecisionEngine implements MiniGame {
     this.running = false;
     this.gameOver = false;
     this.vignetteIntensity = 0;
+    this.combo = 0;
     this.pool.releaseAll();
   }
 
@@ -146,14 +148,17 @@ export class TargetPrecisionEngine implements MiniGame {
 
   private findSpawnPosition(activeTargets: Target[]): { x: number; y: number } | null {
     const dims = this.renderer.scaledDimensions;
-    const padding = dims.edgePadding;
+    const leftPad = dims.edgePadding;
+    const rightPad = dims.edgePadding;
+    const topPad = dims.topPadding;
+    const bottomPad = dims.bottomPadding;
     const w = this.renderer.width;
     const h = this.renderer.height;
     const minDist = dims.minTargetDistance;
 
     for (let attempt = 0; attempt < 50; attempt++) {
-      const x = padding + Math.random() * (w - padding * 2);
-      const y = padding + Math.random() * (h - padding * 2);
+      const x = leftPad + Math.random() * (w - leftPad - rightPad);
+      const y = topPad + Math.random() * (h - topPad - bottomPad);
       let valid = true;
       for (const target of activeTargets) {
         if (distance(x, y, target.x, target.y) < minDist) { valid = false; break; }
@@ -176,18 +181,34 @@ export class TargetPrecisionEngine implements MiniGame {
     }
 
     if (closestTarget && closestDist <= closestTarget.currentOuterRadius(dims)) {
-      // Score based on distance: center = max points, edge of outer circle = minimum
+      // Hit — score based on distance
       const outerR = closestTarget.currentOuterRadius(dims);
       const accuracyMultiplier = Math.max(0.1, 1 - (closestDist / outerR));
       const timeRatio = 1 - closestTarget.progress;
       const speedMultiplier = 0.5 + timeRatio * 0.5;
+
+      // Combo: builds when hitting targets with countdown >= 4 (early hits)
+      const countdown = closestTarget.countdownNumber;
+      if (countdown >= 4) {
+        this.combo++;
+      } else {
+        this.combo = 0;
+      }
+      this.emit('comboChanged', { combo: this.combo });
+
+      const comboMultiplier = 1 + this.combo * 0.1; // +10% per combo
       const basePoints = GAME_DEFAULTS.basePoints * this.level;
-      const points = Math.round(accuracyMultiplier * speedMultiplier * basePoints);
+      const points = Math.round(accuracyMultiplier * speedMultiplier * comboMultiplier * basePoints);
 
       this.score += points;
       this.emit('scoreChanged', { score: this.score });
       audioManager.playSfx('pop');
       this.pool.release(closestTarget);
+    } else {
+      // Miss — clicked empty space, lose a life
+      this.combo = 0;
+      this.emit('comboChanged', { combo: 0 });
+      this.loseLife();
     }
   };
 

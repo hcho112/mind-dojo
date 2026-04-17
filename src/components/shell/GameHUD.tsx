@@ -9,6 +9,7 @@ interface GameHUDProps {
   timeRemaining: number;
   showTimer?: boolean;
   showBottomBar?: boolean;
+  combo?: number;
   soundEnabled: boolean;
   onMenuOpen: () => void;
   onPause: () => void;
@@ -21,7 +22,7 @@ const buttonClass = `pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px
   hover:bg-black/30 dark:hover:bg-white/20 transition-colors`;
 
 export function GameHUD({
-  score, lives, maxLives, level, levelPrefix, timeRemaining, showTimer = true, showBottomBar = true,
+  score, lives, maxLives, level, levelPrefix, timeRemaining, showTimer = true, showBottomBar = true, combo = 0,
   soundEnabled, onMenuOpen, onPause, onToggleSound, visible,
 }: GameHUDProps) {
   if (!visible) return null;
@@ -88,6 +89,14 @@ export function GameHUD({
 
       {showBottomBar && <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-3 px-4 pt-4"
         style={{ paddingBottom: 'calc(1rem + var(--safe-bottom))' }}>
+        {/* Combo indicator */}
+        {combo >= 2 && (
+          <div className="px-3 py-2 rounded-lg bg-amber-500/20 backdrop-blur-sm">
+            <span className="text-sm sm:text-base font-bold text-amber-400">
+              x{combo}
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
           {maxLives > 0 && Array.from({ length: maxLives }).map((_, i) => (
             <img
