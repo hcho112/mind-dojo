@@ -10,6 +10,69 @@ import type { Card, Suit, Value } from './config';
 import type { GameComponentProps } from '../registry';
 import { audioManager } from '@/engine/audio';
 
+function MiniCardStrip({ cards }: { cards: Card[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const scrollStartX = useRef(0);
+
+  // Auto-scroll to the latest card
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (container) {
+      container.scrollLeft = container.scrollWidth;
+    }
+  }, [cards.length]);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    const container = scrollRef.current;
+    if (!container) return;
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    scrollStartX.current = container.scrollLeft;
+    container.style.cursor = 'grabbing';
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    const container = scrollRef.current;
+    if (!container) return;
+    container.scrollLeft = scrollStartX.current - (e.clientX - dragStartX.current);
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const container = scrollRef.current;
+    if (container) container.style.cursor = 'grab';
+  }, []);
+
+  if (cards.length === 0) return null;
+
+  return (
+    <div
+      ref={scrollRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      className="flex gap-1.5 overflow-x-auto select-none px-3 py-2"
+      style={{
+        cursor: 'grab',
+        scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch',
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
+      {cards.map((card, i) => (
+        <div key={`${i}-${card.suit}-${card.value}`} className="flex-shrink-0" style={{ width: '48px' }}>
+          <PlayingCard suit={card.suit} value={card.value} status="correct" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type GamePhase = 'viewing' | 'recalling' | 'gameover';
 type CardStatus = 'default' | 'correct' | 'wrong';
 
@@ -201,6 +264,11 @@ export default function CardRecallGame({
       {/* Recalling phase */}
       {gamePhase === 'recalling' && (
         <div className="flex flex-col w-full h-full">
+          {/* Mini carousel of correctly guessed cards */}
+          {score > 0 && (
+            <MiniCardStrip cards={sequence.slice(0, currentIndex)} />
+          )}
+
           {/* Card area */}
           <div className="flex-1 flex flex-col items-center justify-center px-4">
             <div className="relative" style={{ width: '120px', perspective: '600px' }}>
