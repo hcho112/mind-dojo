@@ -76,7 +76,7 @@ export default function GamePage() {
   const [soundEnabled, setSoundEnabledState] = useState(true);
   const [currentSlug, setCurrentSlug] = useState(slug);
 
-  const engineRef = useRef<{ pause: () => void; resume: () => void; start: () => void } | null>(null);
+  const engineRef = useRef<{ pause: () => void; resume: () => void; start: (startLevel?: number) => void } | null>(null);
   const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track state before menu opened so we can restore it
   const stateBeforeMenuRef = useRef<GameState>('idle');
@@ -111,7 +111,7 @@ export default function GamePage() {
     };
   }, []);
 
-  const handleStart = useCallback(() => {
+  const handleStart = useCallback((startLevel: number = 1) => {
     if (gameOverTimerRef.current) {
       clearTimeout(gameOverTimerRef.current);
       gameOverTimerRef.current = null;
@@ -119,8 +119,8 @@ export default function GamePage() {
     setGameState('playing');
     setScore(0);
     setLives(GAME_DEFAULTS.initialLives);
-    setLevel(1);
-    engineRef.current?.start();
+    setLevel(startLevel);
+    engineRef.current?.start(startLevel);
     audioManager.playBgMusic();
   }, []);
 

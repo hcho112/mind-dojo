@@ -47,8 +47,9 @@ export class TargetPrecisionEngine implements MiniGame {
     this.emit('ready', undefined);
   }
 
-  start(): void {
+  start(startLevel: number = 1): void {
     this.resetState();
+    this.level = startLevel;
     this.running = true;
     this.gameOver = false;
     this.levelConfig = getLevelConfig(this.level);

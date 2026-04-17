@@ -54,7 +54,7 @@ export default function TargetPrecisionGame({
     engineRef.current = {
       pause: () => engine.pause(),
       resume: () => engine.resume(),
-      start: () => engine.start(),
+      start: (startLevel?: number) => engine.start(startLevel),
     };
 
     engine.init(canvas, { theme });
