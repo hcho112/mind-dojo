@@ -81,23 +81,19 @@ export function GameHUD({
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-center gap-4 px-4 pt-4"
+      <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-3 px-4 pt-4"
         style={{ paddingBottom: 'calc(1rem + var(--safe-bottom))' }}>
-        <div className="flex gap-1.5">
+        <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
           {Array.from({ length: maxLives }).map((_, i) => (
             <img
               key={i}
               src={i < lives ? '/images/heart.svg' : '/images/heart-empty.svg'}
               alt={i < lives ? 'Life' : 'Lost life'}
-              width={22}
-              height={22}
-              className="transition-opacity"
+              width={20}
+              height={20}
             />
           ))}
-        </div>
-
-        <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">
+          <span className="ml-2 text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">
             {score.toLocaleString()}
           </span>
         </div>
