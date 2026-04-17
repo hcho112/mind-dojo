@@ -1,6 +1,6 @@
 'use client';
 
-import { Suit, Value, SUIT_COLORS, SUIT_SYMBOLS, isFaceCard } from './config';
+import { Suit, Value, SUIT_SYMBOLS, isFaceCard } from './config';
 
 interface PlayingCardProps {
   suit: Suit;
@@ -11,13 +11,14 @@ interface PlayingCardProps {
 }
 
 function SuitIcon({ suit, size }: { suit: Suit; size: number }) {
+  const isRed = suit === 'hearts' || suit === 'diamonds';
   return (
     <span
       style={{
         fontSize: size,
         lineHeight: 1,
         display: 'inline-block',
-        color: SUIT_COLORS[suit],
+        color: isRed ? 'var(--card-red)' : 'var(--card-black)',
       }}
     >
       {SUIT_SYMBOLS[suit]}
@@ -62,6 +63,7 @@ function PipLayout({ suit, value }: { suit: Suit; value: Value }) {
   const count = getNumericValue(value);
   if (count === 0) return null;
 
+  const isRed = suit === 'hearts' || suit === 'diamonds';
   const positions = getPipPositions(count);
   const pipSize = count <= 3 ? 32 : count <= 5 ? 26 : count <= 7 ? 22 : 18;
 
@@ -77,7 +79,7 @@ function PipLayout({ suit, value }: { suit: Suit; value: Value }) {
             transform: 'translate(-50%, -50%)',
             fontSize: pipSize,
             lineHeight: 1,
-            color: SUIT_COLORS[suit],
+            color: isRed ? 'var(--card-red)' : 'var(--card-black)',
           }}
         >
           {SUIT_SYMBOLS[suit]}
@@ -94,7 +96,8 @@ export default function Card({
   wrongGuess,
   className = '',
 }: PlayingCardProps) {
-  const suitColor = SUIT_COLORS[suit];
+  const isRedSuit = suit === 'hearts' || suit === 'diamonds';
+  const suitColor = isRedSuit ? 'var(--card-red)' : 'var(--card-black)';
   const isHidden = status === 'hidden';
 
   const borderClass =
@@ -102,7 +105,7 @@ export default function Card({
       ? 'border-2 border-green-500'
       : status === 'wrong'
       ? 'border-2 border-red-500'
-      : 'border border-gray-200 dark:border-[#b8b4ac]';
+      : 'border border-gray-200 dark:border-[#6b6660]';
 
   return (
     <div className="flex flex-col items-center">

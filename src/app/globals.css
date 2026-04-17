@@ -9,6 +9,8 @@
   --border: #e2e2ea;
   --label: #1a1a2e;
   --card-bg: #ffffff;
+  --card-black: #1a1a2e;
+  --card-red: #dc2626;
 }
 
 .dark {
@@ -19,7 +21,9 @@
   --accent: #6366f1;
   --border: #2a2a3a;
   --label: #ffffff;
-  --card-bg: #d4d0c8;
+  --card-bg: #8a8578;
+  --card-black: #1a1a2e;
+  --card-red: #dc2626;
 }
 
 :root {
