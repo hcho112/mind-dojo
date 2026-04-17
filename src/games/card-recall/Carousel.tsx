@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Card } from './config';
 import PlayingCard from './Card';
 
@@ -75,6 +75,45 @@ export default function Carousel({
     setVisibleIndex(closest);
   }
 
+  // Mouse drag-to-scroll (desktop)
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const scrollStartX = useRef(0);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    scrollStartX.current = container.scrollLeft;
+    container.style.cursor = 'grabbing';
+    container.style.scrollSnapType = 'none'; // disable snap while dragging
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const dx = e.clientX - dragStartX.current;
+    container.scrollLeft = scrollStartX.current - dx;
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.style.cursor = 'grab';
+    container.style.scrollSnapType = 'x mandatory'; // re-enable snap
+  }, []);
+
+  // Clean up drag on mouse leave
+  const handleMouseLeave = useCallback(() => {
+    if (isDragging.current) {
+      handleMouseUp();
+    }
+  }, [handleMouseUp]);
+
   return (
     <div className="flex flex-col items-center w-full">
       {/* Perfect run banner */}
@@ -88,8 +127,13 @@ export default function Carousel({
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="w-full flex overflow-x-auto snap-x snap-mandatory"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        className="w-full flex overflow-x-auto snap-x snap-mandatory select-none"
         style={{
+          cursor: 'grab',
           paddingLeft: 'calc(50% - min(120px, 40vw))',
           paddingRight: 'calc(50% - min(120px, 40vw))',
           gap: '16px',
