@@ -5,7 +5,9 @@ interface GameHUDProps {
   lives: number;
   maxLives: number;
   level: number;
+  levelPrefix?: string; // e.g. "Deck" instead of "LV"
   timeRemaining: number;
+  showTimer?: boolean;
   soundEnabled: boolean;
   onMenuOpen: () => void;
   onPause: () => void;
@@ -18,7 +20,7 @@ const buttonClass = `pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px
   hover:bg-black/30 dark:hover:bg-white/20 transition-colors`;
 
 export function GameHUD({
-  score, lives, maxLives, level, timeRemaining,
+  score, lives, maxLives, level, levelPrefix, timeRemaining, showTimer = true,
   soundEnabled, onMenuOpen, onPause, onToggleSound, visible,
 }: GameHUDProps) {
   if (!visible) return null;
@@ -70,21 +72,23 @@ export function GameHUD({
           </button>
         </div>
 
-        {/* Center: timer */}
-        <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">{timeStr}</span>
-        </div>
+        {/* Center: timer (hidden for games without timers) */}
+        {showTimer && (
+          <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
+            <span className="text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">{timeStr}</span>
+          </div>
+        )}
 
         {/* Right: level */}
         <div className="px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-sm sm:text-lg font-bold text-[var(--label)]">LV {level}</span>
+          <span className="text-sm sm:text-lg font-bold text-[var(--label)]">{levelPrefix || 'LV'} {level}</span>
         </div>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-3 px-4 pt-4"
         style={{ paddingBottom: 'calc(1rem + var(--safe-bottom))' }}>
         <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          {Array.from({ length: maxLives }).map((_, i) => (
+          {maxLives > 0 && Array.from({ length: maxLives }).map((_, i) => (
             <img
               key={i}
               src={i < lives ? '/images/heart.svg' : '/images/heart-empty.svg'}
@@ -93,7 +97,7 @@ export function GameHUD({
               height={20}
             />
           ))}
-          <span className="ml-2 text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">
+          <span className={`${maxLives > 0 ? 'ml-2' : ''} text-lg sm:text-2xl font-mono font-bold text-[var(--label)]`}>
             {score.toLocaleString()}
           </span>
         </div>

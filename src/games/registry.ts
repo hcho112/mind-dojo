@@ -7,6 +7,8 @@ export interface GameEntry {
   icon: string;
   selfManagedGameOver?: boolean; // game handles its own game-over phase (no auto-transition to idle)
   levelLabel?: string; // custom label for level selector (e.g. "Decks" instead of "Start Level")
+  hudLevelPrefix?: string; // HUD level prefix (e.g. "Deck" instead of "LV")
+  hudShowTimer?: boolean; // whether to show the countdown timer in HUD
   alwaysShowLevelSelector?: boolean; // show level selector even at level 1
   loader: () => Promise<{ default: ComponentType<GameComponentProps> }>;
 }
@@ -36,6 +38,8 @@ export const registry: Record<string, GameEntry> = {
     icon: '/images/game-card-recall.svg',
     selfManagedGameOver: true,
     levelLabel: 'Decks',
+    hudLevelPrefix: 'Deck',
+    hudShowTimer: false,
     alwaysShowLevelSelector: true,
     loader: () => import('./card-recall'),
   },

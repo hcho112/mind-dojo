@@ -239,9 +239,11 @@ export default function GamePage() {
       <GameHUD
         score={score}
         lives={lives}
-        maxLives={GAME_DEFAULTS.initialLives}
+        maxLives={gameEntry?.selfManagedGameOver ? 0 : GAME_DEFAULTS.initialLives}
         level={level}
+        levelPrefix={gameEntry?.hudLevelPrefix}
         timeRemaining={timeRemaining}
+        showTimer={gameEntry?.hudShowTimer !== false}
         soundEnabled={soundEnabled}
         onMenuOpen={handleMenuOpen}
         onPause={handlePause}

@@ -63,7 +63,7 @@ function PipLayout({ suit, value }: { suit: Suit; value: Value }) {
   if (count === 0) return null;
 
   const positions = getPipPositions(count);
-  const pipSize = count <= 4 ? 20 : count <= 7 ? 16 : 14;
+  const pipSize = count <= 3 ? 32 : count <= 5 ? 26 : count <= 7 ? 22 : 18;
 
   return (
     <div className="relative w-full h-full">
@@ -131,11 +131,11 @@ export default function Card({
                 <div className="flex flex-col items-center gap-1">
                   <span
                     className="font-black leading-none"
-                    style={{ fontSize: 40, color: suitColor }}
+                    style={{ fontSize: 48, color: suitColor }}
                   >
                     {value}
                   </span>
-                  <SuitIcon suit={suit} size={26} />
+                  <SuitIcon suit={suit} size={30} />
                 </div>
               ) : (
                 <PipLayout suit={suit} value={value} />
