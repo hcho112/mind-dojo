@@ -4,13 +4,14 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { getGameEntry, DEFAULT_GAME } from '@/games/registry';
 import { useTheme } from '@/theme/ThemeProvider';
-import { setLastPlayedGame } from '@/storage/preferences';
+import { setLastPlayedGame, getSoundEnabled, setSoundEnabled } from '@/storage/preferences';
 import { openGameDB, saveResult } from '@/storage/gameStore';
 import { MenuDrawer } from '@/components/shell/MenuDrawer';
 import { GameHUD } from '@/components/shell/GameHUD';
 import { StartScreen } from '@/components/screens/StartScreen';
 import { GameSkeleton } from '@/components/screens/GameSkeleton';
 import { GAME_DEFAULTS } from '@/games/target-precision/config';
+import { audioManager } from '@/engine/audio';
 import type { GameComponentProps } from '@/games/registry';
 import type { ComponentType } from 'react';
 
@@ -72,6 +73,7 @@ export default function GamePage() {
   const [level, setLevel] = useState<number>(1);
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [soundEnabled, setSoundEnabledState] = useState(true);
   const [currentSlug, setCurrentSlug] = useState(slug);
 
   const engineRef = useRef<{ pause: () => void; resume: () => void; start: () => void } | null>(null);
@@ -94,9 +96,17 @@ export default function GamePage() {
     openGameDB();
   }, [slug]);
 
-  // Clean up game-over timer on unmount
+  // Initialize audio on mount, read persisted preference
   useEffect(() => {
+    const enabled = getSoundEnabled();
+    setSoundEnabledState(enabled);
+    audioManager.musicEnabled = enabled;
+    audioManager.sfxEnabled = enabled;
+    audioManager.preload('pop', '/sounds/pop.mp3');
+    audioManager.setSfxVolume('pop', 0.5);
+    audioManager.initBgMusic('/sounds/bg-music.mp3', 0.3);
     return () => {
+      audioManager.stopBgMusic();
       if (gameOverTimerRef.current) clearTimeout(gameOverTimerRef.current);
     };
   }, []);
@@ -111,10 +121,12 @@ export default function GamePage() {
     setLives(GAME_DEFAULTS.initialLives);
     setLevel(1);
     engineRef.current?.start();
+    audioManager.playBgMusic();
   }, []);
 
   const handleGameOver = useCallback((result: { score: number; level: number; timeOfDeath: number }) => {
     setGameState('gameover');
+    audioManager.stopBgMusic();
     saveResult(slug, {
       score: result.score,
       level: result.level,
@@ -141,12 +153,27 @@ export default function GamePage() {
   const handlePause = useCallback(() => {
     setGameState('paused');
     engineRef.current?.pause();
+    audioManager.pauseBgMusic();
   }, []);
 
   const handleResume = useCallback(() => {
     setGameState('playing');
     engineRef.current?.resume();
+    audioManager.playBgMusic();
   }, []);
+
+  const handleToggleSound = useCallback(() => {
+    const next = !soundEnabled;
+    setSoundEnabledState(next);
+    setSoundEnabled(next);
+    audioManager.musicEnabled = next;
+    audioManager.sfxEnabled = next;
+    if (next && gameState === 'playing') {
+      audioManager.playBgMusic();
+    } else if (!next) {
+      audioManager.pauseBgMusic();
+    }
+  }, [soundEnabled, gameState]);
 
   const handleMenuOpen = useCallback(() => {
     stateBeforeMenuRef.current = gameState;
@@ -200,8 +227,10 @@ export default function GamePage() {
         maxLives={GAME_DEFAULTS.initialLives}
         level={level}
         timeRemaining={timeRemaining}
+        soundEnabled={soundEnabled}
         onMenuOpen={handleMenuOpen}
         onPause={handlePause}
+        onToggleSound={handleToggleSound}
         visible={isGameActive}
       />
 

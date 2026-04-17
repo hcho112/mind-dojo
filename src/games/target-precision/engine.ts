@@ -7,6 +7,7 @@ import { distance } from '@/engine/math';
 import { TargetPool, Target } from './entities';
 import { TargetPrecisionRenderer } from './renderer';
 import { getLevelConfig, GAME_DEFAULTS, type LevelConfig } from './config';
+import { audioManager } from '@/engine/audio';
 
 type EventListeners = Record<GameEventType, GameEventCallback[]>;
 
@@ -184,6 +185,7 @@ export class TargetPrecisionEngine implements MiniGame {
 
       this.score += points;
       this.emit('scoreChanged', { score: this.score });
+      audioManager.playSfx('pop');
       this.pool.release(closestTarget);
     }
   };

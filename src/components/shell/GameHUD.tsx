@@ -6,12 +6,21 @@ interface GameHUDProps {
   maxLives: number;
   level: number;
   timeRemaining: number;
+  soundEnabled: boolean;
   onMenuOpen: () => void;
   onPause: () => void;
+  onToggleSound: () => void;
   visible: boolean;
 }
 
-export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOpen, onPause, visible }: GameHUDProps) {
+const buttonClass = `pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
+  bg-black/20 dark:bg-white/10 backdrop-blur-sm
+  hover:bg-black/30 dark:hover:bg-white/20 transition-colors`;
+
+export function GameHUD({
+  score, lives, maxLives, level, timeRemaining,
+  soundEnabled, onMenuOpen, onPause, onToggleSound, visible,
+}: GameHUDProps) {
   if (!visible) return null;
 
   const minutes = Math.floor(timeRemaining / 60);
@@ -21,15 +30,9 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
   return (
     <div className="absolute inset-0 pointer-events-none z-10">
       <div className="flex items-start justify-between p-4">
-        {/* Left: menu + pause */}
+        {/* Left: menu + pause + sound */}
         <div className="flex gap-2">
-          <button
-            onClick={onMenuOpen}
-            className="pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
-              bg-black/20 dark:bg-white/10 backdrop-blur-sm
-              hover:bg-black/30 dark:hover:bg-white/20 transition-colors"
-            aria-label="Open menu"
-          >
+          <button onClick={onMenuOpen} className={buttonClass} aria-label="Open menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2" strokeLinecap="round" className="text-[var(--label)]">
               <line x1="3" y1="6" x2="21" y2="6" />
@@ -38,17 +41,31 @@ export function GameHUD({ score, lives, maxLives, level, timeRemaining, onMenuOp
             </svg>
           </button>
 
-          <button
-            onClick={onPause}
-            className="pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
-              bg-black/20 dark:bg-white/10 backdrop-blur-sm
-              hover:bg-black/30 dark:hover:bg-white/20 transition-colors"
-            aria-label="Pause game"
-          >
+          <button onClick={onPause} className={buttonClass} aria-label="Pause game">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               strokeWidth="2" strokeLinecap="round" className="text-[var(--label)]">
               <line x1="8" y1="5" x2="8" y2="19" />
               <line x1="16" y1="5" x2="16" y2="19" />
+            </svg>
+          </button>
+
+          <button onClick={onToggleSound} className={buttonClass}
+            aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--label)]">
+              {soundEnabled ? (
+                <>
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                </>
+              ) : (
+                <>
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </>
+              )}
             </svg>
           </button>
         </div>
