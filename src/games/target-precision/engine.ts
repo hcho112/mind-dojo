@@ -29,6 +29,7 @@ export class TargetPrecisionEngine implements MiniGame {
 
   private vignetteIntensity: number = 0;
   private combo: number = 0;
+  private comboDisplay = { opacity: 0, scale: 1, text: '', age: 0, fading: false };
 
   private listeners: EventListeners = {
     scoreChanged: [], lifeLost: [], levelUp: [], gameOver: [], countdown: [], comboChanged: [], ready: [],
@@ -105,6 +106,7 @@ export class TargetPrecisionEngine implements MiniGame {
     this.gameOver = false;
     this.vignetteIntensity = 0;
     this.combo = 0;
+    this.comboDisplay = { opacity: 0, scale: 1, text: '', age: 0, fading: false };
     this.pool.releaseAll();
   }
 
@@ -191,7 +193,22 @@ export class TargetPrecisionEngine implements MiniGame {
       const countdown = closestTarget.countdownNumber;
       if (countdown >= 4) {
         this.combo++;
+        if (this.combo >= 2) {
+          // Pop in combo text
+          this.comboDisplay = {
+            opacity: 1,
+            scale: 1.8,
+            text: `x${this.combo}`,
+            age: 0,
+            fading: false,
+          };
+        }
       } else {
+        if (this.combo >= 2) {
+          // Fade out the existing combo
+          this.comboDisplay.fading = true;
+          this.comboDisplay.age = 0;
+        }
         this.combo = 0;
       }
       this.emit('comboChanged', { combo: this.combo });
@@ -206,6 +223,10 @@ export class TargetPrecisionEngine implements MiniGame {
       this.pool.release(closestTarget);
     } else {
       // Miss — clicked empty space, lose a life
+      if (this.combo >= 2) {
+        this.comboDisplay.fading = true;
+        this.comboDisplay.age = 0;
+      }
       this.combo = 0;
       this.emit('comboChanged', { combo: 0 });
       this.loseLife();
@@ -227,6 +248,10 @@ export class TargetPrecisionEngine implements MiniGame {
   }
 
   private advanceLevel(): void {
+    if (this.combo >= 2) {
+      this.comboDisplay.fading = true;
+      this.comboDisplay.age = 0;
+    }
     this.level++;
     this.pool.releaseAll();
     this.levelConfig = getLevelConfig(this.level);
@@ -241,10 +266,35 @@ export class TargetPrecisionEngine implements MiniGame {
     if (this.vignetteIntensity > 0) {
       this.vignetteIntensity = Math.max(0, this.vignetteIntensity - deltaTime / 500);
     }
+
+    // Combo display animation
+    const cd = this.comboDisplay;
+    if (cd.opacity > 0) {
+      cd.age += deltaTime;
+      if (cd.fading) {
+        // Fade out over 800ms
+        cd.opacity = Math.max(0, 1 - cd.age / 800);
+        cd.scale = 1 + cd.age / 2000; // slowly drift larger as it fades
+      } else {
+        // Pop in: scale springs from 1.8 down to 1.0 over 200ms, then hold
+        const popDuration = 200;
+        if (cd.age < popDuration) {
+          const t = cd.age / popDuration;
+          cd.scale = 1.8 - 0.8 * t; // 1.8 → 1.0
+        } else {
+          cd.scale = 1;
+        }
+      }
+    }
   }
 
   private render(): void {
     this.renderer.clear();
+    // Draw combo behind targets
+    const cd = this.comboDisplay;
+    if (cd.opacity > 0) {
+      this.renderer.drawCombo(cd.text, cd.opacity, cd.scale, this.combo);
+    }
     this.renderer.drawTargets(this.pool.activeTargets);
     this.renderer.drawLifeLostVignette(this.vignetteIntensity);
   }

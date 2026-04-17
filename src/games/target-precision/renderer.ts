@@ -120,6 +120,41 @@ export class TargetPrecisionRenderer {
     }
   }
 
+  drawCombo(text: string, opacity: number, scale: number, combo: number): void {
+    if (opacity <= 0 || !text) return;
+
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+
+    this.ctx.save();
+    this.ctx.globalAlpha = opacity;
+    this.ctx.translate(cx, cy);
+    this.ctx.scale(scale, scale);
+
+    // Rainbow color based on combo count — cycles through hues
+    const hue = (combo * 35) % 360;
+    const color = `hsl(${hue}, 85%, 60%)`;
+
+    // Glow effect
+    this.ctx.shadowColor = color;
+    this.ctx.shadowBlur = 20 + combo * 5;
+
+    // Text
+    const fontSize = Math.min(this.width * 0.18, 100);
+    this.ctx.font = `900 ${fontSize}px system-ui, -apple-system, sans-serif`;
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(text, 0, 0);
+
+    // Outline for depth
+    this.ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeText(text, 0, 0);
+
+    this.ctx.restore();
+  }
+
   drawLifeLostVignette(intensity: number): void {
     if (intensity <= 0) return;
 
