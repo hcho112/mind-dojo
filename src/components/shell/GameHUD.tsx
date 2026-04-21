@@ -106,8 +106,23 @@ export function GameHUD({
           </button>
         </div>
 
-        {/* Right: timer + score */}
+        {/* Right: combo + timer + score */}
         <div className="flex gap-1.5 ml-auto">
+          {combo >= 2 && (
+            <div className={statPillClass} style={{ borderColor: 'var(--accent-combo)' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: 'var(--accent-combo)',
+                }}
+              >
+                ×{combo}
+              </span>
+            </div>
+          )}
+
           {showTimer && (
             <div
               className={[
@@ -157,20 +172,6 @@ export function GameHUD({
             </span>
           </div>
 
-          {combo >= 2 && (
-            <div className={statPillClass} style={{ borderColor: 'var(--accent-combo)' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-pixel)',
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: 'var(--accent-combo)',
-                }}
-              >
-                ×{combo}
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
