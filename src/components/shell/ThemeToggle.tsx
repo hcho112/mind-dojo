@@ -1,6 +1,7 @@
 'use client';
 
 import { useTheme } from '@/theme/ThemeProvider';
+import { Icon } from '@/components/ui/Icon';
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -8,14 +9,27 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg
-        hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        width: '100%',
+        padding: '12px 14px',
+        borderRadius: 'var(--radius-md)',
+        border: 'none',
+        background: 'transparent',
+        color: 'var(--text)',
+        fontFamily: 'var(--font-display)',
+        fontSize: 14,
+        fontWeight: 500,
+        cursor: 'pointer',
+        transition: 'background 0.15s',
+      }}
+      className="menu-row-hover"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
-      <span className="text-lg">{theme === 'dark' ? '☀️' : '🌙'}</span>
-      <span className="text-sm text-[var(--text-muted)]">
-        {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-      </span>
+      <Icon name={theme === 'dark' ? 'eye' : 'eye'} size={18} color="var(--text-muted)" />
+      <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
     </button>
   );
 }
