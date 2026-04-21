@@ -14,12 +14,7 @@ const VALUE_ROWS: Value[][] = [
   ['8', '9', '10', 'J', 'Q', 'K'],
 ];
 
-const SUIT_BG: Record<Suit, string> = {
-  hearts: 'rgba(220,38,38,0.12)',
-  diamonds: 'rgba(220,38,38,0.12)',
-  spades: 'rgba(26,26,46,0.10)',
-  clubs: 'rgba(26,26,46,0.10)',
-};
+const isRedSuit = (suit: Suit) => suit === 'hearts' || suit === 'diamonds';
 
 export default function SuitValuePicker({ onSelect, disabled = false, resetKey = 0 }: SuitValuePickerProps) {
   const [selectedSuit, setSelectedSuit] = useState<Suit | null>(null);
@@ -50,71 +45,100 @@ export default function SuitValuePicker({ onSelect, disabled = false, resetKey =
     trySubmit(selectedSuit, value);
   }
 
-  const wrapperClass = disabled ? 'opacity-50 pointer-events-none' : '';
+  const wrapperStyle: React.CSSProperties = disabled
+    ? { opacity: 0.5, pointerEvents: 'none' }
+    : {};
+
+  // Shared dock button style builder
+  function dockBtnStyle(active: boolean, red?: boolean): React.CSSProperties {
+    return {
+      height: 52,
+      minWidth: 44,
+      display: 'grid',
+      placeItems: 'center',
+      background: active
+        ? 'color-mix(in oklch, var(--accent-recall) 22%, var(--bg-elev))'
+        : 'var(--bg-elev)',
+      color: active
+        ? 'var(--accent-recall)'
+        : red
+        ? 'var(--accent-recall)'
+        : 'var(--text)',
+      border: `1.5px solid ${active ? 'var(--accent-recall)' : 'var(--stroke)'}`,
+      borderRadius: 10,
+      fontFamily: 'var(--font-pixel)',
+      fontSize: 18,
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+      cursor: 'pointer',
+      transition: 'all 0.15s ease',
+      transform: active ? 'scale(1.04)' : 'scale(1)',
+      boxShadow: active
+        ? '0 0 20px -6px color-mix(in oklch, var(--accent-recall) calc(100% * var(--glow-strength, 0.6)), transparent)'
+        : 'none',
+      opacity: active ? 1 : 0.65,
+      WebkitTapHighlightColor: 'transparent',
+    };
+  }
 
   return (
     <div
-      className={`w-full rounded-t-2xl shadow-2xl px-3 pt-3 pb-4 ${wrapperClass}`}
+      className="w-full"
       style={{
-        background: 'var(--surface)',
-        borderTop: '1px solid var(--border)',
+        padding: 10,
+        border: '1.5px solid var(--stroke)',
+        borderTopLeftRadius: 'var(--radius-lg)',
+        borderTopRightRadius: 'var(--radius-lg)',
+        background: 'var(--bg-elev)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        boxShadow: '0 -8px 30px -20px rgba(0,0,0,0.8)',
+        ...wrapperStyle,
       }}
     >
       {/* Suit row */}
-      <div className="flex gap-2 mb-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
         {SUITS.map((suit) => {
           const isSelected = selectedSuit === suit;
+          const red = isRedSuit(suit);
           return (
             <button
               key={suit}
               onClick={() => handleSuitPress(suit)}
-              className="flex-1 flex flex-col items-center justify-center rounded-xl transition-all active:scale-95"
-              style={{
-                minHeight: '52px',
-                background: SUIT_BG[suit],
-                border: isSelected
-                  ? '2px solid var(--accent)'
-                  : '2px solid var(--border)',
-                opacity: isSelected ? 1 : 0.55,
-                color: (suit === 'hearts' || suit === 'diamonds') ? '#dc2626' : 'var(--label)',
-              }}
               aria-label={suit}
               aria-pressed={isSelected}
+              style={dockBtnStyle(isSelected, red)}
             >
-              <span className="text-2xl leading-none select-none">{SUIT_SYMBOLS[suit]}</span>
+              <span style={{ fontSize: 22, lineHeight: 1 }}>{SUIT_SYMBOLS[suit]}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Value grid — always active, any order */}
-      <div className="flex flex-col gap-2">
-        {VALUE_ROWS.map((row, rowIdx) => (
-          <div key={rowIdx} className="flex gap-2">
-            {row.map((value) => {
-              const isSelected = selectedValue === value;
-              return (
-                <button
-                  key={value}
-                  onClick={() => handleValuePress(value)}
-                  className="flex-1 flex items-center justify-center rounded-xl font-semibold text-base transition-all active:scale-95"
-                  style={{
-                    minHeight: '48px',
-                    background: 'var(--surface)',
-                    border: isSelected
-                      ? '2px solid var(--accent)'
-                      : '1px solid var(--border)',
-                    color: 'var(--label)',
-                    opacity: isSelected ? 1 : 0.75,
-                  }}
-                >
-                  {value}
-                </button>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+      {/* Value rows — always active, any order */}
+      {VALUE_ROWS.map((row, rowIdx) => (
+        <div
+          key={rowIdx}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}
+        >
+          {row.map((value) => {
+            const isSelected = selectedValue === value;
+            return (
+              <button
+                key={value}
+                onClick={() => handleValuePress(value)}
+                aria-pressed={isSelected}
+                style={dockBtnStyle(isSelected)}
+              >
+                {value}
+              </button>
+            );
+          })}
+          {/* Filler cell in row 2 to keep 7-column grid aligned */}
+          {rowIdx === 1 && <div />}
+        </div>
+      ))}
     </div>
   );
 }

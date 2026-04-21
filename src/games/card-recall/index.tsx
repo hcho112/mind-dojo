@@ -56,14 +56,15 @@ function MiniCardStrip({ cards }: { cards: Card[] }) {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      className="flex gap-1.5 overflow-x-auto select-none px-2 py-2 rounded-xl"
+      className="flex gap-1.5 overflow-x-auto select-none px-2 py-2"
       style={{
         cursor: 'grab',
         scrollbarWidth: 'none',
         WebkitOverflowScrolling: 'touch',
         maxWidth: '85vw',
-        border: '1px solid var(--border)',
-        background: 'var(--surface)',
+        border: '1.5px solid var(--stroke)',
+        borderRadius: 'var(--radius-md)',
+        background: 'var(--bg-elev)',
       }}
     >
       {cards.map((card, i) => (
@@ -247,16 +248,24 @@ export default function CardRecallGame({
       {paused && (
         <div
           className="absolute inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.6)' }}
+          style={{ background: 'rgba(0,0,0,0.7)' }}
         >
-          <p className="text-white text-3xl font-bold tracking-wide">Paused</p>
+          <p
+            className="text-3xl tracking-widest"
+            style={{ fontFamily: 'var(--font-pixel)', color: 'var(--accent-recall)' }}
+          >
+            Paused
+          </p>
         </div>
       )}
 
-      {/* Viewing phase */}
+      {/* Viewing phase — memorize */}
       {gamePhase === 'viewing' && (
         <div className="flex flex-col items-center justify-center flex-1 w-full px-4 py-6">
-          <p className="mb-6 text-sm font-medium uppercase tracking-widest" style={{ color: 'var(--label)' }}>
+          <p
+            className="mb-6 text-xs uppercase tracking-widest"
+            style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}
+          >
             Memorize the sequence
           </p>
           <Carousel
@@ -271,14 +280,19 @@ export default function CardRecallGame({
       {gamePhase === 'recalling' && (
         <div className="flex flex-col w-full h-full">
           {/* Card area — centers the mini strip + flip card together */}
-          <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4">
+          <div className="flex-1 flex flex-col items-center justify-center px-4 gap-4 min-h-0">
             {/* Mini strip of correctly guessed cards — above the flip card */}
             {score > 0 && (
               <MiniCardStrip cards={sequence.slice(0, currentIndex)} />
             )}
 
-            <div className="relative" style={{ width: '120px', perspective: '600px' }}>
-              {/* Card flip container */}
+            {/* Flip card container */}
+            <div
+              style={{
+                width: 'min(140px, 38vw)',
+                perspective: '600px',
+              }}
+            >
               <div
                 className={`transition-all duration-500 ${feedbackFlash === 'wrong' ? 'animate-[shake_0.3s_ease-in-out]' : ''}`}
                 style={{
@@ -286,20 +300,45 @@ export default function CardRecallGame({
                   transform: revealedCard ? 'rotateY(180deg)' : 'rotateY(0deg)',
                 }}
               >
-                {/* Front — card back (face down) */}
+                {/* Front — card back (face down) with accent-recall gradient + scanlines */}
                 <div
-                  className="rounded-xl shadow-md flex items-center justify-center"
+                  className="scanlines"
                   style={{
-                    width: '120px',
+                    width: '100%',
                     aspectRatio: '2.5 / 3.5',
-                    background: 'linear-gradient(135deg, #4338ca, #7c3aed, #3730a3)',
+                    borderRadius: 'var(--radius-lg)',
+                    background: `repeating-linear-gradient(
+                      45deg,
+                      var(--accent-recall-deep) 0 6px,
+                      var(--accent-recall) 6px 12px
+                    )`,
+                    border: '2px solid var(--accent-recall)',
+                    boxShadow: '0 0 40px -10px color-mix(in oklch, var(--accent-recall) 50%, transparent)',
                     backfaceVisibility: 'hidden',
+                    position: 'relative',
                   }}
                 >
                   <div
-                    className="rounded-lg border-2 border-white/30 animate-pulse"
-                    style={{ width: '80%', height: '80%' }}
-                  />
+                    style={{
+                      position: 'absolute',
+                      inset: 8,
+                      border: '1.5px dashed color-mix(in oklch, var(--accent-recall) 80%, transparent)',
+                      borderRadius: 'calc(var(--radius-lg) - 6px)',
+                      display: 'grid',
+                      placeItems: 'center',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-pixel)',
+                        fontSize: 20,
+                        color: 'var(--accent-recall)',
+                        letterSpacing: '-0.04em',
+                      }}
+                    >
+                      MD
+                    </span>
+                  </div>
                 </div>
 
                 {/* Back — revealed card (face up) */}
@@ -311,7 +350,14 @@ export default function CardRecallGame({
                   }}
                 >
                   {revealedCard && (
-                    <div className="ring-4 ring-green-500 rounded-xl" style={{ width: '120px' }}>
+                    <div
+                      style={{
+                        width: '100%',
+                        outline: '3px solid oklch(0.72 0.2 145)',
+                        outlineOffset: '2px',
+                        borderRadius: 'var(--radius-lg)',
+                      }}
+                    >
                       <PlayingCard suit={revealedCard.suit} value={revealedCard.value} status="correct" />
                     </div>
                   )}
@@ -320,22 +366,40 @@ export default function CardRecallGame({
             </div>
           </div>
 
-          {/* Progress info — centered pill above picker */}
+          {/* Progress pill — centered above picker */}
           <div className="flex justify-center" style={{ paddingBottom: '10px' }}>
-            <div className="inline-flex items-center gap-4 px-4 py-1.5 rounded-full"
-              style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-              <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-                Card <span className="font-bold tabular-nums">{currentIndex + 1}</span> of{' '}
-                <span className="font-bold tabular-nums">{sequence.length}</span>
-              </p>
-              <p className="text-sm font-medium" style={{ color: 'var(--label)' }}>
-                Score: <span className="font-bold tabular-nums">{score}</span>
-              </p>
+            <div
+              style={{
+                padding: '8px 16px',
+                border: '1.5px solid var(--stroke)',
+                borderRadius: 'var(--radius-pill)',
+                background: 'var(--bg-elev)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: 13,
+                color: 'var(--text-muted)',
+                display: 'flex',
+                gap: 16,
+                alignItems: 'baseline',
+              }}
+            >
+              <span>
+                Card{' '}
+                <b style={{ color: 'var(--text)' }}>{currentIndex + 1}</b>
+                {' '}of{' '}
+                <b style={{ color: 'var(--text)' }}>{sequence.length}</b>
+              </span>
+              <span>
+                Score:{' '}
+                <b style={{ color: 'var(--accent-recall)' }}>{score}</b>
+              </span>
             </div>
           </div>
 
-          {/* Picker */}
-          <div className="w-full" style={{ paddingBottom: 'var(--safe-bottom)' }}>
+          {/* Picker — safe-bottom aware */}
+          <div
+            className="w-full"
+            style={{ paddingBottom: 'max(0px, var(--safe-bottom))' }}
+          >
             <SuitValuePicker onSelect={handleGuess} disabled={pickerDisabled} resetKey={pickerResetKey} />
           </div>
         </div>
@@ -345,10 +409,20 @@ export default function CardRecallGame({
       {gamePhase === 'gameover' && (
         <div className="flex flex-col items-center justify-center flex-1 w-full px-4 py-6">
           {!perfectRun && (
-            <p className="mb-2 text-xl font-bold text-red-500">Wrong!</p>
+            <p
+              className="mb-2 text-xl font-bold"
+              style={{ color: 'oklch(0.65 0.22 25)', fontFamily: 'var(--font-pixel)' }}
+            >
+              Wrong!
+            </p>
           )}
-          <p className="mb-6 text-sm font-medium" style={{ color: 'var(--label)' }}>
-            Cards recalled: <span className="font-bold">{score}</span> / {sequence.length}
+          <p
+            className="mb-6 text-sm"
+            style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
+          >
+            Cards recalled:{' '}
+            <span style={{ color: 'var(--accent-recall)', fontWeight: 700 }}>{score}</span>
+            {' '}/ {sequence.length}
           </p>
           <Carousel
             cards={sequence}

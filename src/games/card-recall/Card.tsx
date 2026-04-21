@@ -19,7 +19,8 @@ function SuitIcon({ suit, size }: { suit: Suit; size: number }) {
         fontSize: size,
         lineHeight: 1,
         display: 'inline-block',
-        color: isRed ? 'var(--card-red)' : 'var(--card-black)',
+        color: isRed ? 'var(--accent-recall)' : 'var(--text)',
+        fontFamily: 'var(--font-pixel)',
       }}
     >
       {SUIT_SYMBOLS[suit]}
@@ -80,7 +81,8 @@ function PipLayout({ suit, value }: { suit: Suit; value: Value }) {
             transform: 'translate(-50%, -50%)',
             fontSize: pipSize,
             lineHeight: 1,
-            color: isRed ? 'var(--card-red)' : 'var(--card-black)',
+            color: isRed ? 'var(--accent-recall)' : 'var(--text)',
+            fontFamily: 'var(--font-pixel)',
           }}
         >
           {SUIT_SYMBOLS[suit]}
@@ -99,25 +101,33 @@ export default function Card({
   className = '',
 }: PlayingCardProps) {
   const isRedSuit = suit === 'hearts' || suit === 'diamonds';
-  const suitColor = isRedSuit ? 'var(--card-red)' : 'var(--card-black)';
+  const suitColor = isRedSuit ? 'var(--accent-recall)' : 'var(--text)';
   const isHidden = status === 'hidden';
 
-  const borderClass =
+  const borderStyle =
     status === 'correct'
-      ? 'border-2 border-green-500'
+      ? { border: '2px solid oklch(0.72 0.2 145)' }
       : status === 'wrong'
-      ? 'border-2 border-red-500'
-      : 'border border-gray-200 dark:border-[#6b6660]';
+      ? { border: '2px solid oklch(0.65 0.22 25)' }
+      : { border: '1.5px solid var(--stroke-strong)' };
 
   // Mini mode — compact value + suit only
   if (mini) {
     return (
       <div
-        className={`rounded-lg overflow-hidden select-none flex items-center justify-center ${borderClass} ${className}`}
-        style={{ aspectRatio: '2.5 / 3.5', width: '100%', backgroundColor: 'var(--card-bg)' }}
+        className={`rounded-lg overflow-hidden select-none flex items-center justify-center ${className}`}
+        style={{
+          aspectRatio: '2.5 / 3.5',
+          width: '100%',
+          background: 'var(--surface)',
+          ...borderStyle,
+        }}
       >
-        <div className="flex flex-col items-center leading-none" style={{ color: suitColor }}>
-          <span className="font-bold" style={{ fontSize: 14 }}>{value}</span>
+        <div
+          className="flex flex-col items-center leading-none"
+          style={{ color: suitColor, fontFamily: 'var(--font-pixel)' }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '-0.02em' }}>{value}</span>
           <SuitIcon suit={suit} size={14} />
         </div>
       </div>
@@ -127,21 +137,61 @@ export default function Card({
   return (
     <div className="flex flex-col items-center">
       <div
-        className={`relative rounded-xl shadow-md overflow-hidden select-none ${borderClass} ${className}`}
-        style={{ aspectRatio: '2.5 / 3.5', width: '100%' }}
+        className={`relative overflow-hidden select-none noise ${className}`}
+        style={{
+          aspectRatio: '2.5 / 3.5',
+          width: '100%',
+          borderRadius: 'var(--radius-lg)',
+          ...borderStyle,
+        }}
       >
         {isHidden ? (
-          <div className="w-full h-full bg-gradient-to-br from-indigo-700 via-purple-700 to-indigo-900 flex items-center justify-center">
+          /* Card back — accent-recall gradient + scanlines overlay */
+          <div
+            className="scanlines w-full h-full flex items-center justify-center"
+            style={{
+              background: `repeating-linear-gradient(
+                45deg,
+                var(--accent-recall-deep) 0 6px,
+                var(--accent-recall) 6px 12px
+              )`,
+            }}
+          >
             <div
-              className="rounded-lg border-2 border-white/30"
-              style={{ width: '80%', height: '80%' }}
-            />
+              style={{
+                position: 'absolute',
+                inset: 8,
+                border: '1.5px dashed color-mix(in oklch, var(--accent-recall) 80%, transparent)',
+                borderRadius: 'calc(var(--radius-lg) - 6px)',
+                display: 'grid',
+                placeItems: 'center',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: 24,
+                  color: 'var(--accent-recall)',
+                  letterSpacing: '-0.04em',
+                }}
+              >
+                MD
+              </span>
+            </div>
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col p-2" style={{ backgroundColor: 'var(--card-bg)' }}>
+          <div
+            className="w-full h-full flex flex-col p-2"
+            style={{ background: 'var(--surface)' }}
+          >
             {/* Top-left corner */}
-            <div className="flex flex-col items-start leading-none" style={{ color: suitColor }}>
-              <span className="font-bold text-lg leading-none">{value}</span>
+            <div
+              className="flex flex-col items-start leading-none"
+              style={{ color: suitColor, fontFamily: 'var(--font-pixel)' }}
+            >
+              <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                {value}
+              </span>
               <SuitIcon suit={suit} size={16} />
             </div>
 
@@ -150,8 +200,14 @@ export default function Card({
               {isFaceCard(value) ? (
                 <div className="flex flex-col items-center gap-1">
                   <span
-                    className="font-black leading-none"
-                    style={{ fontSize: 48, color: suitColor }}
+                    style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: 48,
+                      fontWeight: 900,
+                      lineHeight: 1,
+                      color: suitColor,
+                      letterSpacing: '-0.04em',
+                    }}
                   >
                     {value}
                   </span>
@@ -165,9 +221,11 @@ export default function Card({
             {/* Bottom-right corner — rotated 180° */}
             <div
               className="flex flex-col items-end leading-none self-end"
-              style={{ color: suitColor, transform: 'rotate(180deg)' }}
+              style={{ color: suitColor, transform: 'rotate(180deg)', fontFamily: 'var(--font-pixel)' }}
             >
-              <span className="font-bold text-lg leading-none">{value}</span>
+              <span style={{ fontSize: 18, fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                {value}
+              </span>
               <SuitIcon suit={suit} size={16} />
             </div>
           </div>
@@ -175,7 +233,12 @@ export default function Card({
       </div>
 
       {status === 'wrong' && wrongGuess && (
-        <p className="mt-1 text-xs text-red-500 font-medium">{wrongGuess}</p>
+        <p
+          className="mt-1 text-xs font-medium"
+          style={{ color: 'oklch(0.65 0.22 25)', fontFamily: 'var(--font-mono)' }}
+        >
+          {wrongGuess}
+        </p>
       )}
     </div>
   );
