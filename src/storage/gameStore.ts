@@ -117,6 +117,22 @@ export async function getHistory(
   });
 }
 
+export async function getAllResults(): Promise<GameResult[]> {
+  const db = await openGameDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const request = store.getAll();
+
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => {
+      const results: StoredResult[] = request.result;
+      results.sort((a, b) => b.timestamp - a.timestamp);
+      resolve(results.map(({ gameSlug: _, ...rest }) => rest as GameResult));
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
 export async function getTotalGamesPlayed(): Promise<number> {
   const db = await openGameDB();
   const tx = db.transaction(STORE_NAME, 'readonly');

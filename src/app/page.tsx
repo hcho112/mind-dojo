@@ -6,7 +6,7 @@ import { Panel } from '@/components/ui/Panel';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
-import { getBestStats, getTotalGamesPlayed, type BestStats } from '@/storage/gameStore';
+import { getBestStats, getTotalGamesPlayed, getHistory, type BestStats } from '@/storage/gameStore';
 
 // ─── Arcade backdrop: fixed dot-grid + vignette ──────────────────────────────
 
@@ -609,11 +609,41 @@ export default function Home() {
   const [precisionStats, setPrecisionStats] = useState<BestStats | null>(null);
   const [recallStats, setRecallStats] = useState<BestStats | null>(null);
   const [totalGames, setTotalGames] = useState(0);
+  const [totalPlayTime, setTotalPlayTime] = useState(0); // seconds
+  const [lastImproved, setLastImproved] = useState<{ game: string; delta: number } | null>(null);
 
   useEffect(() => {
     getBestStats('target-precision').then(setPrecisionStats).catch(() => {});
     getBestStats('card-recall').then(setRecallStats).catch(() => {});
     getTotalGamesPlayed().then(setTotalGames).catch(() => {});
+
+    // Calculate total play time from Target Precision timeOfDeath (time remaining → session ~ levelDuration - timeOfDeath)
+    // and Card Recall timeOfDeath (elapsed recall seconds)
+    // Rough estimate: sum all timeOfDeath values across games
+    Promise.all([
+      getHistory('target-precision'),
+      getHistory('card-recall'),
+    ]).then(([tpHistory, crHistory]) => {
+      // TP: timeOfDeath = seconds remaining, estimate ~30s per session
+      const tpTime = tpHistory.reduce((sum, r) => sum + Math.max(30, 30 - r.timeOfDeath + r.level * 30), 0);
+      // CR: timeOfDeath = elapsed seconds in recall phase, add ~30s for viewing
+      const crTime = crHistory.reduce((sum, r) => sum + r.timeOfDeath + 30, 0);
+      setTotalPlayTime(Math.round(tpTime + crTime));
+
+      // Last improved: compare last 2 games of each type for score delta
+      let best: { game: string; delta: number } | null = null;
+      if (tpHistory.length >= 2) {
+        const delta = tpHistory[0].score - tpHistory[1].score;
+        if (delta > 0) best = { game: 'Precision', delta };
+      }
+      if (crHistory.length >= 2) {
+        const delta = crHistory[0].score - crHistory[1].score;
+        if (delta > 0 && (!best || delta > best.delta)) {
+          best = { game: 'Card Recall', delta };
+        }
+      }
+      setLastImproved(best);
+    }).catch(() => {});
   }, []);
 
   // Format stats display values
@@ -803,41 +833,23 @@ export default function Home() {
                 </div>
               </ActivityPanel>
 
-              {/* Weekly goal */}
-              <ActivityPanel eyebrow="Weekly goal">
+              {/* Total play time */}
+              <ActivityPanel eyebrow="Total play time">
                 <div
+                  className="score-slab tabular"
                   style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    gap: 6,
+                    fontSize: 28,
                     marginTop: 10,
+                    fontFamily: 'var(--font-pixel)',
+                    color: 'var(--accent-precision)',
                   }}
                 >
-                  <span
-                    className="score-slab tabular"
-                    style={{ fontSize: 28 }}
-                  >
-                    —
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>/ 20 sessions</span>
+                  {totalPlayTime > 0
+                    ? `${Math.floor(totalPlayTime / 3600)}h ${Math.floor((totalPlayTime % 3600) / 60)}m`
+                    : '—'}
                 </div>
-                <div
-                  style={{
-                    height: 6,
-                    background: 'var(--bg-elev-2)',
-                    borderRadius: 'var(--radius-pill)',
-                    marginTop: 10,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '0%',
-                      height: '100%',
-                      background: 'var(--accent-combo)',
-                      borderRadius: 'inherit',
-                    }}
-                  />
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                  {totalPlayTime > 0 ? 'Across all games' : 'Start playing to track'}
                 </div>
               </ActivityPanel>
 
@@ -873,31 +885,47 @@ export default function Home() {
                 </div>
               </ActivityPanel>
 
-              {/* Up next */}
-              <ActivityPanel eyebrow="Up next">
-                <div
-                  style={{
-                    fontSize: 14,
-                    color: 'var(--text-muted)',
-                    marginTop: 10,
-                  }}
-                >
-                  Try Card Recall to train your memory and earn the{' '}
-                  <span
-                    style={{
-                      color: 'var(--accent-recall)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Shuffler
-                  </span>{' '}
-                  badge.
-                </div>
-                <Link href="/game/card-recall" style={{ display: 'inline-block', marginTop: 12 }}>
-                  <Button variant="recall" size="sm" icon="bolt">
-                    Start
-                  </Button>
-                </Link>
+              {/* Last improved */}
+              <ActivityPanel eyebrow="Last improved">
+                {lastImproved ? (
+                  <>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginTop: 10,
+                      }}
+                    >
+                      <Icon name="bolt" size={16} color="var(--accent-combo)" />
+                      <span
+                        className="score-slab tabular"
+                        style={{
+                          fontSize: 28,
+                          fontFamily: 'var(--font-pixel)',
+                          color: 'var(--accent-combo)',
+                        }}
+                      >
+                        +{lastImproved.delta.toLocaleString()}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      Score up in {lastImproved.game}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      className="score-slab tabular"
+                      style={{ fontSize: 28, marginTop: 10, fontFamily: 'var(--font-pixel)' }}
+                    >
+                      —
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      Play twice to see improvement
+                    </div>
+                  </>
+                )}
               </ActivityPanel>
             </div>
           </section>
