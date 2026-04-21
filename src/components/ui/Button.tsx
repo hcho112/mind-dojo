@@ -55,6 +55,9 @@ const VARIANTS: Record<Variant, Record<string, string>> = {
   },
 };
 
+// Unique class name to scope the CSS
+const BTN_CLASS = 'md-btn';
+
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { variant = 'ghost', size = 'md', icon, iconRight, children, className = '', style, disabled, ...rest },
@@ -63,54 +66,52 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const vars = VARIANTS[variant];
 
     return (
-      <button
-        ref={ref}
-        className={`btn-md ${className}`}
-        disabled={disabled}
-        style={{
-          position: 'relative',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          borderRadius: 'var(--radius-md)',
-          fontFamily: 'var(--font-display)',
-          fontWeight: 600,
-          userSelect: 'none',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          border: '1.5px solid var(--btn-stroke)',
-          background: 'var(--btn-bg)',
-          color: 'var(--btn-fg)',
-          boxShadow: '0 var(--btn-press-offset, 4px) 0 0 var(--btn-shadow-color), var(--shadow-soft)',
-          transition: 'transform 0.15s var(--ease-snap), box-shadow 0.15s var(--ease-snap), background 0.15s',
-          opacity: disabled ? 0.4 : 1,
-          pointerEvents: disabled ? 'none' : 'auto',
-          WebkitTapHighlightColor: 'transparent',
-          ...vars,
-          ...SIZE_MAP[size],
-          ...style,
-        } as React.CSSProperties}
-        onPointerDown={(e) => {
-          const el = e.currentTarget;
-          el.style.transform = 'translateY(var(--btn-press-offset, 4px))';
-          el.style.boxShadow = '0 0 0 0 var(--btn-shadow-color), var(--shadow-soft)';
-        }}
-        onPointerUp={(e) => {
-          const el = e.currentTarget;
-          el.style.transform = '';
-          el.style.boxShadow = '';
-        }}
-        onPointerLeave={(e) => {
-          const el = e.currentTarget;
-          el.style.transform = '';
-          el.style.boxShadow = '';
-        }}
-        {...rest}
-      >
-        {icon && <Icon name={icon} size={ICON_SIZE[size]} />}
-        {children}
-        {iconRight && <Icon name={iconRight} size={ICON_SIZE[size]} />}
-      </button>
+      <>
+        <button
+          ref={ref}
+          className={`${BTN_CLASS} ${className}`}
+          disabled={disabled}
+          style={{
+            position: 'relative',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
+            borderRadius: 'var(--radius-md)',
+            fontFamily: 'var(--font-display)',
+            fontWeight: 600,
+            userSelect: 'none',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            border: '1.5px solid var(--btn-stroke)',
+            background: 'var(--btn-bg)',
+            color: 'var(--btn-fg)',
+            boxShadow: '0 4px 0 0 var(--btn-shadow-color), var(--shadow-soft)',
+            transform: 'translateY(0)',
+            transition: 'transform 0.15s var(--ease-snap), box-shadow 0.15s var(--ease-snap)',
+            opacity: disabled ? 0.4 : 1,
+            pointerEvents: disabled ? 'none' : 'auto',
+            WebkitTapHighlightColor: 'transparent',
+            ...vars,
+            ...SIZE_MAP[size],
+            ...style,
+          } as React.CSSProperties}
+          {...rest}
+        >
+          {icon && <Icon name={icon} size={ICON_SIZE[size]} />}
+          {children}
+          {iconRight && <Icon name={iconRight} size={ICON_SIZE[size]} />}
+        </button>
+        <style>{`
+          .${BTN_CLASS}:hover:not(:disabled) {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 0 0 var(--btn-shadow-color), var(--shadow-soft) !important;
+          }
+          .${BTN_CLASS}:active:not(:disabled) {
+            transform: translateY(4px) !important;
+            box-shadow: 0 0 0 0 var(--btn-shadow-color), var(--shadow-soft) !important;
+          }
+        `}</style>
+      </>
     );
   },
 );
