@@ -4,6 +4,11 @@ import { lerpColor } from '@/engine/math';
 import { gameColors } from '@/theme/gameColors';
 import type { GameConfig } from '@/engine/types';
 
+// Neon Dojo precision palette
+const PRECISION_CYAN = '#2EB8D0';   // accent-precision approximation
+const DANGER_RED = '#D94040';       // accent-danger approximation
+const PRECISION_CYAN_DEEP = '#1A7A8A';
+
 export class TargetPrecisionRenderer {
   private ctx: CanvasRenderingContext2D;
   private canvas: HTMLCanvasElement;
@@ -11,8 +16,8 @@ export class TargetPrecisionRenderer {
   private dpr: number;
   private dims!: ScaledDimensions;
 
-  // Pre-calculated gradient stops
-  private gradientStops: string[] = [];
+  // Pre-calculated color stops: cyan → red
+  private rimStops: string[] = [];
   private readonly GRADIENT_RESOLUTION = 100;
 
   constructor(canvas: HTMLCanvasElement, theme: GameConfig['theme']) {
@@ -27,15 +32,16 @@ export class TargetPrecisionRenderer {
   }
 
   private preCalculateGradient(): void {
-    const { start, mid, end } = gameColors.targetGradient;
-    this.gradientStops = [];
-
+    this.rimStops = [];
     for (let i = 0; i <= this.GRADIENT_RESOLUTION; i++) {
       const t = i / this.GRADIENT_RESOLUTION;
-      if (t <= 0.5) {
-        this.gradientStops.push(lerpColor(start, mid, t * 2));
+      // Cyan → amber → red as target progresses
+      if (t <= 0.6) {
+        // Stay cyan for first 60%
+        this.rimStops.push(lerpColor(PRECISION_CYAN, '#F5A623', t / 0.6));
       } else {
-        this.gradientStops.push(lerpColor(mid, end, (t - 0.5) * 2));
+        // Amber → red for last 40%
+        this.rimStops.push(lerpColor('#F5A623', DANGER_RED, (t - 0.6) / 0.4));
       }
     }
   }
@@ -65,6 +71,50 @@ export class TargetPrecisionRenderer {
     const bg = gameColors.canvasBg[this.theme];
     this.ctx.fillStyle = bg;
     this.ctx.fillRect(0, 0, this.width, this.height);
+
+    // Draw grid overlay
+    this.drawGrid();
+  }
+
+  private drawGrid(): void {
+    const gridSize = 60;
+    const gridColor = this.theme === 'dark'
+      ? 'rgba(46, 184, 208, 0.07)'  // cyan tinted grid
+      : 'rgba(46, 184, 208, 0.05)';
+
+    this.ctx.save();
+
+    // Draw grid lines
+    this.ctx.strokeStyle = gridColor;
+    this.ctx.lineWidth = 1;
+
+    // Vertical lines
+    for (let x = 0; x <= this.width; x += gridSize) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, 0);
+      this.ctx.lineTo(x, this.height);
+      this.ctx.stroke();
+    }
+
+    // Horizontal lines
+    for (let y = 0; y <= this.height; y += gridSize) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, y);
+      this.ctx.lineTo(this.width, y);
+      this.ctx.stroke();
+    }
+
+    // Radial mask — fade grid at edges using a radial clear
+    const gradient = this.ctx.createRadialGradient(
+      this.width / 2, this.height / 2, Math.min(this.width, this.height) * 0.25,
+      this.width / 2, this.height / 2, Math.min(this.width, this.height) * 0.65,
+    );
+    gradient.addColorStop(0, 'transparent');
+    gradient.addColorStop(1, gameColors.canvasBg[this.theme]);
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, this.width, this.height);
+
+    this.ctx.restore();
   }
 
   drawTarget(target: Target): void {
@@ -74,44 +124,63 @@ export class TargetPrecisionRenderer {
     const outerR = target.currentOuterRadius(this.dims);
     const innerR = this.dims.innerRadius;
     const progress = target.progress;
+    const countdown = target.countdownNumber;
 
-    // Outer circle with gradient color
+    // Get rim color based on progress (cyan → amber → red)
     const colorIndex = Math.min(
       Math.floor(progress * this.GRADIENT_RESOLUTION),
       this.GRADIENT_RESOLUTION,
     );
-    const color = this.gradientStops[colorIndex];
+    const rimColor = this.rimStops[colorIndex];
 
+    // Outer ring glow
+    const glowAlpha = Math.max(0.1, 1 - progress);
+    this.ctx.save();
+    this.ctx.shadowColor = rimColor;
+    this.ctx.shadowBlur = 20 * glowAlpha;
+
+    // Outer ring — glowing border
     this.ctx.beginPath();
     this.ctx.arc(x, y, outerR, 0, Math.PI * 2);
-    this.ctx.fillStyle = color + '33';
+    this.ctx.fillStyle = `${rimColor}18`; // very subtle fill
     this.ctx.fill();
-    this.ctx.strokeStyle = color;
+    this.ctx.strokeStyle = rimColor;
+    this.ctx.lineWidth = 2.5;
+    this.ctx.stroke();
+
+    this.ctx.restore();
+
+    // Inner clickable area — visible border with fill
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, innerR, 0, Math.PI * 2);
+    this.ctx.fillStyle = `${rimColor}20`; // subtle tinted fill
+    this.ctx.fill();
+    this.ctx.strokeStyle = rimColor;
     this.ctx.lineWidth = 2;
     this.ctx.stroke();
 
-    // Inner circle (bullseye)
-    const bullseyeColor = gameColors.bullseye[this.theme];
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, innerR, 0, Math.PI * 2);
-    this.ctx.fillStyle = bullseyeColor + '22';
-    this.ctx.fill();
-    this.ctx.strokeStyle = bullseyeColor;
-    this.ctx.lineWidth = 1.5;
-    this.ctx.stroke();
-
-    // Bullseye dot (hit zone visual hint)
+    // Center dot
     this.ctx.beginPath();
     this.ctx.arc(x, y, this.dims.bullseyeRadius, 0, Math.PI * 2);
-    this.ctx.fillStyle = bullseyeColor + '44';
+    this.ctx.fillStyle = `${rimColor}55`;
     this.ctx.fill();
 
-    // Countdown number — font scales with target
-    this.ctx.fillStyle = bullseyeColor;
-    this.ctx.font = `bold ${Math.round(this.dims.countdownFontSize)}px monospace`;
+    // Countdown number — pixel font style
+    const isDanger = countdown <= 2;
+    const numColor = isDanger ? DANGER_RED : PRECISION_CYAN;
+    const fontSize = Math.round(this.dims.countdownFontSize * 1.8);
+
+    this.ctx.save();
+    if (this.theme === 'dark') {
+      this.ctx.shadowColor = numColor;
+      this.ctx.shadowBlur = 10;
+    }
+    this.ctx.fillStyle = numColor;
+    this.ctx.font = `700 ${fontSize}px monospace`;
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-    this.ctx.fillText(String(target.countdownNumber), x, y);
+    this.ctx.fillText(String(countdown), x, y);
+    this.ctx.restore();
   }
 
   drawTargets(targets: Target[]): void {
@@ -131,15 +200,12 @@ export class TargetPrecisionRenderer {
     this.ctx.translate(cx, cy);
     this.ctx.scale(scale, scale);
 
-    // Rainbow color based on combo count — cycles through hues
     const hue = (combo * 35) % 360;
     const color = `hsl(${hue}, 85%, 60%)`;
 
-    // Glow effect
     this.ctx.shadowColor = color;
     this.ctx.shadowBlur = 20 + combo * 5;
 
-    // Text
     const fontSize = Math.min(this.width * 0.18, 100);
     this.ctx.font = `900 ${fontSize}px system-ui, -apple-system, sans-serif`;
     this.ctx.textAlign = 'center';
@@ -147,7 +213,6 @@ export class TargetPrecisionRenderer {
     this.ctx.fillStyle = color;
     this.ctx.fillText(text, 0, 0);
 
-    // Outline for depth
     this.ctx.strokeStyle = 'rgba(0,0,0,0.3)';
     this.ctx.lineWidth = 2;
     this.ctx.strokeText(text, 0, 0);
