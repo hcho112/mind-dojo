@@ -49,7 +49,7 @@ export default function RootLayout({
         <ThemeProvider>
           <DesignTweaksProvider>
             {children}
-            <TweaksDock />
+            {process.env.NODE_ENV === 'development' && <TweaksDock />}
           </DesignTweaksProvider>
         </ThemeProvider>
       </body>

@@ -246,7 +246,7 @@ export function StartScreen({
                 }}
                 aria-label="Lower level"
               >
-                <Icon name="arrow" size={18} style={{ transform: 'rotate(180deg)' }} />
+                <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}><Icon name="arrow" size={18} /></span>
               </button>
 
               <div style={{ textAlign: 'center', minWidth: 100 }}>
