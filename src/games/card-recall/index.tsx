@@ -9,6 +9,7 @@ import { SUIT_SYMBOLS } from './config';
 import type { Card, Suit, Value } from './config';
 import type { GameComponentProps } from '../registry';
 import { audioManager } from '@/engine/audio';
+import { getBestStats, type BestStats } from '@/storage/gameStore';
 
 function MiniCardStrip({ cards }: { cards: Card[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -103,6 +104,7 @@ export default function CardRecallGame({
   const [feedbackFlash, setFeedbackFlash] = useState<'correct' | 'wrong' | null>(null);
   const [pickerResetKey, setPickerResetKey] = useState(0);
   const [revealedCard, setRevealedCard] = useState<Card | null>(null);
+  const [bestStatsData, setBestStatsData] = useState<BestStats | null>(null);
 
   const deckCountRef = useRef(1);
   const scoreRef = useRef(0);
@@ -206,6 +208,7 @@ export default function CardRecallGame({
           setGamePhase('gameover');
           const elapsedSeconds = Math.round((Date.now() - recallStartTimeRef.current) / 1000);
           onGameOver({ score: newScore, level: deckCountRef.current, timeOfDeath: elapsedSeconds });
+          getBestStats('card-recall').then(setBestStatsData).catch(() => {});
         }
 
         guessInProgressRef.current = false;
@@ -229,6 +232,7 @@ export default function CardRecallGame({
         setGamePhase('gameover');
         const elapsedSeconds = Math.round((Date.now() - recallStartTimeRef.current) / 1000);
         onGameOver({ score: scoreRef.current, level: deckCountRef.current, timeOfDeath: elapsedSeconds });
+        getBestStats('card-recall').then(setBestStatsData).catch(() => {});
         guessInProgressRef.current = false;
       }, 500);
     }
@@ -407,23 +411,46 @@ export default function CardRecallGame({
 
       {/* Game over / replay phase */}
       {gamePhase === 'gameover' && (
-        <div className="flex flex-col items-center justify-center flex-1 w-full px-4 py-6">
+        <div className="flex flex-col items-center flex-1 w-full px-4 py-4 overflow-y-auto">
           {!perfectRun && (
             <p
-              className="mb-2 text-xl font-bold"
+              className="mb-1 text-lg font-bold"
               style={{ color: 'oklch(0.65 0.22 25)', fontFamily: 'var(--font-pixel)' }}
             >
               Wrong!
             </p>
           )}
-          <p
-            className="mb-6 text-sm"
-            style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
-          >
-            Cards recalled:{' '}
-            <span style={{ color: 'var(--accent-recall)', fontWeight: 700 }}>{score}</span>
-            {' '}/ {sequence.length}
-          </p>
+
+          {/* Stats comparison */}
+          <div style={{ display: 'flex', gap: 20, marginBottom: 12, justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div className="eyebrow" style={{ marginBottom: 2 }}>This Run</div>
+              <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 26, fontWeight: 700, color: 'var(--accent-recall)' }}>
+                {score}
+              </div>
+              <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-dim)' }}>
+                / {sequence.length} cards
+              </div>
+            </div>
+            {bestStatsData && (
+              <div style={{ textAlign: 'center' }}>
+                <div className="eyebrow" style={{ marginBottom: 2, color: 'var(--accent-combo)' }}>Best</div>
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 26, fontWeight: 700, color: 'var(--accent-combo)' }}>
+                  {bestStatsData.bestScore}
+                </div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-dim)' }}>
+                  cards recalled
+                </div>
+              </div>
+            )}
+          </div>
+
+          {score >= (bestStatsData?.bestScore ?? Infinity) && (
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--accent-combo)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+              New Record!
+            </div>
+          )}
+
           <Carousel
             cards={sequence}
             cardStatuses={cardStatuses}

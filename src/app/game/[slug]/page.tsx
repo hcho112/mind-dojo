@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { getGameEntry, DEFAULT_GAME } from '@/games/registry';
 import { useTheme } from '@/theme/ThemeProvider';
 import { setLastPlayedGame, getSoundEnabled, setSoundEnabled } from '@/storage/preferences';
-import { openGameDB, saveResult } from '@/storage/gameStore';
+import { openGameDB, saveResult, getBestStats, type BestStats } from '@/storage/gameStore';
 import { MenuDrawer } from '@/components/shell/MenuDrawer';
 import { GameHUD } from '@/components/shell/GameHUD';
 import { StartScreen } from '@/components/screens/StartScreen';
@@ -76,6 +76,8 @@ export default function GamePage() {
   const [combo, setCombo] = useState<number>(0);
   const [soundEnabled, setSoundEnabledState] = useState(true);
   const [currentSlug, setCurrentSlug] = useState(slug);
+  const [lastResult, setLastResult] = useState<{ score: number; level: number; timeOfDeath: number } | null>(null);
+  const [bestStats, setBestStats] = useState<BestStats | null>(null);
 
   const engineRef = useRef<{ pause: () => void; resume: () => void; start: (startLevel?: number) => void } | null>(null);
   const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -145,11 +147,10 @@ export default function GamePage() {
         setGameState('idle');
       }
     } else {
+      setLastResult(result);
       setGameState('gameover');
-      gameOverTimerRef.current = setTimeout(() => {
-        setGameState('idle');
-        gameOverTimerRef.current = null;
-      }, 1500);
+      // Load best stats for comparison
+      getBestStats(slug).then(setBestStats).catch(() => {});
     }
   }, [slug]);
 
@@ -287,6 +288,106 @@ export default function GamePage() {
             <p className="text-sm uppercase tracking-wider text-[var(--accent)] mb-1">Level Complete</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text)] mb-4">Level {level}</h2>
             <p className="text-sm sm:text-base text-[var(--text-muted)] animate-pulse">Tap to continue</p>
+          </div>
+        </div>
+      )}
+
+      {/* Game over overlay (for non-self-managed games like Target Precision) */}
+      {gameState === 'gameover' && lastResult && (
+        <div
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center"
+          style={{
+            background: 'color-mix(in oklch, var(--bg) 80%, transparent)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}
+          onClick={() => setGameState('idle')}
+        >
+          <div
+            style={{
+              padding: '28px 32px',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-elev)',
+              border: '1px solid var(--stroke)',
+              boxShadow: 'var(--shadow-card)',
+              textAlign: 'center',
+              maxWidth: 320,
+              width: '90%',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="eyebrow" style={{ color: 'var(--accent-danger)', marginBottom: 8 }}>
+              Game Over
+            </div>
+
+            {/* This run */}
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginBottom: 16 }}>
+              <div>
+                <div className="eyebrow" style={{ marginBottom: 4 }}>Score</div>
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 28, fontWeight: 700, color: gameEntry?.accent || 'var(--accent-precision)' }}>
+                  {lastResult.score.toLocaleString()}
+                </div>
+              </div>
+              <div>
+                <div className="eyebrow" style={{ marginBottom: 4 }}>Level</div>
+                <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 28, fontWeight: 700, color: 'var(--text)' }}>
+                  {lastResult.level}
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: 'var(--stroke)', marginBottom: 16 }} />
+
+            {/* Personal best */}
+            {bestStats && (
+              <div style={{ marginBottom: 20 }}>
+                <div className="eyebrow" style={{ marginBottom: 8, color: 'var(--accent-combo)' }}>
+                  Personal Best
+                </div>
+                <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                  <div>
+                    <div className="eyebrow" style={{ marginBottom: 2 }}>Best Score</div>
+                    <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 20, fontWeight: 700, color: 'var(--accent-combo)' }}>
+                      {bestStats.bestScore.toLocaleString()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="eyebrow" style={{ marginBottom: 2 }}>Best Level</div>
+                    <div style={{ fontFamily: 'var(--font-pixel)', fontSize: 20, fontWeight: 700, color: 'var(--text-muted)' }}>
+                      {bestStats.bestLevel}
+                    </div>
+                  </div>
+                </div>
+                {lastResult.score >= bestStats.bestScore && (
+                  <div style={{ marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--accent-combo)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                    New Record!
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => setGameState('idle')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                padding: '14px 28px',
+                borderRadius: 'var(--radius-md)',
+                border: '1.5px solid var(--stroke-strong)',
+                background: 'var(--bg-elev-2)',
+                color: 'var(--text)',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}
