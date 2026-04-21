@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { getBestStats, type BestStats } from '@/storage/gameStore';
+import { Button } from '@/components/ui/Button';
+import { Icon } from '@/components/ui/Icon';
+import { Panel } from '@/components/ui/Panel';
 
 interface StartScreenProps {
   gameName: string;
@@ -10,6 +13,8 @@ interface StartScreenProps {
   levelLabel?: string;
   timeLabel?: string;
   alwaysShowLevelSelector?: boolean;
+  accent?: string;
+  howToPlay?: string;
   onStart: (startLevel: number) => void;
   onMenuOpen: () => void;
   visible: boolean;
@@ -17,11 +22,12 @@ interface StartScreenProps {
 
 export function StartScreen({
   gameName, gameSlug, gameIcon, levelLabel, timeLabel, alwaysShowLevelSelector,
-  onStart, onMenuOpen, visible,
+  accent, howToPlay, onStart, onMenuOpen, visible,
 }: StartScreenProps) {
   const [stats, setStats] = useState<BestStats | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(1);
+  const [showLockedTip, setShowLockedTip] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -34,10 +40,11 @@ export function StartScreen({
 
   if (!visible) return null;
 
-  // For alwaysShowLevelSelector games, allow going beyond best level (e.g. pick any deck count)
+  const accentColor = accent || 'var(--accent-precision)';
+  const unlockedMax = stats?.bestLevel ?? 1;
   const maxLevel = alwaysShowLevelSelector
-    ? Math.max(10, (stats?.bestLevel ?? 1) + 1)
-    : (stats?.bestLevel ?? 1);
+    ? Math.max(10, unlockedMax + 1)
+    : unlockedMax;
 
   const formatTime = (seconds: number): string => {
     const m = Math.floor(seconds / 60);
@@ -46,112 +53,283 @@ export function StartScreen({
   };
 
   const handleLevelDown = () => {
+    setShowLockedTip(false);
     setSelectedLevel((prev) => Math.max(1, prev - 1));
   };
 
   const handleLevelUp = () => {
+    if (!alwaysShowLevelSelector && selectedLevel >= unlockedMax) {
+      setShowLockedTip(true);
+      setTimeout(() => setShowLockedTip(false), 2500);
+      return;
+    }
+    setShowLockedTip(false);
     setSelectedLevel((prev) => Math.min(maxLevel, prev + 1));
   };
 
+  const variant = gameSlug === 'card-recall' ? 'recall' as const : 'precision' as const;
+
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center
-      bg-[var(--bg)]/90 backdrop-blur-sm"
-      style={{ paddingBottom: 'var(--safe-bottom)' }}>
-      {/* Menu button */}
-      <div className="absolute top-4 left-4">
+    <div
+      className="absolute inset-0 z-20 flex flex-col items-center justify-center overflow-y-auto"
+      style={{
+        background: 'var(--bg)',
+        paddingBottom: 'max(24px, var(--safe-bottom))',
+        paddingTop: 'max(24px, var(--safe-top))',
+      }}
+    >
+      {/* Menu button — top left */}
+      <div className="absolute top-3 left-3" style={{ zIndex: 5 }}>
         <button
           onClick={onMenuOpen}
-          className="p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
-            bg-black/10 dark:bg-white/10
-            hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
+          className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl transition-colors"
+          style={{
+            border: '1px solid var(--stroke-strong)',
+            background: 'color-mix(in oklch, var(--bg-elev) 85%, transparent)',
+            color: 'var(--text)',
+            backdropFilter: 'blur(8px)',
+          }}
           aria-label="Open menu"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" className="text-[var(--text)]">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
+          <Icon name="menu" size={20} />
         </button>
       </div>
 
       {/* Main content */}
-      <div className="px-6 flex flex-col items-center">
-        <div className="flex flex-col items-center mb-6 sm:mb-8">
-          <img src={gameIcon} alt="" width={72} height={72} className="mb-4 rounded-2xl" />
-          <h1 className="text-2xl sm:text-4xl font-bold text-[var(--text)] text-center">{gameName}</h1>
+      <div className="px-5 flex flex-col items-center w-full" style={{ maxWidth: 420 }}>
+
+        {/* Game icon with glow */}
+        <div
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+            boxShadow: `0 0 40px -8px color-mix(in oklch, ${accentColor} calc(70% * var(--glow-strength, 1)), transparent)`,
+            marginBottom: 16,
+          }}
+        >
+          <img src={gameIcon} alt="" width={80} height={80} />
         </div>
 
+        {/* Game name */}
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontSize: 'clamp(24px, 6vw, 36px)',
+            letterSpacing: '-0.02em',
+            textAlign: 'center',
+            color: 'var(--text)',
+            marginBottom: 8,
+          }}
+        >
+          {gameName}
+        </h1>
+
+        {/* How to play */}
+        {howToPlay && (
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 14,
+              color: 'var(--text-muted)',
+              textAlign: 'center',
+              lineHeight: 1.5,
+              maxWidth: 340,
+              marginBottom: 24,
+            }}
+          >
+            {howToPlay}
+          </p>
+        )}
+
+        {/* Stats row */}
         {loaded && (
-          <div className="flex gap-4 sm:gap-8 mb-6 sm:mb-8">
-            <div className="text-center">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Score</p>
-              <p className="text-lg sm:text-2xl font-mono font-bold text-[var(--text)]">
+          <div
+            style={{
+              display: 'flex',
+              gap: 12,
+              marginBottom: 24,
+              width: '100%',
+              justifyContent: 'center',
+            }}
+          >
+            <Panel
+              style={{
+                flex: 1,
+                padding: '12px 10px',
+                textAlign: 'center',
+                background: 'var(--bg-elev)',
+                border: '1px solid var(--stroke)',
+                borderRadius: 'var(--radius-md)',
+              }}
+            >
+              <div className="eyebrow" style={{ marginBottom: 4 }}>Best Score</div>
+              <div
+                className="tabular"
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: accentColor,
+                }}
+              >
                 {stats ? stats.bestScore.toLocaleString() : '—'}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Level</p>
-              <p className="text-lg sm:text-2xl font-mono font-bold text-[var(--text)]">
+              </div>
+            </Panel>
+
+            <Panel
+              style={{
+                flex: 1,
+                padding: '12px 10px',
+                textAlign: 'center',
+                background: 'var(--bg-elev)',
+                border: '1px solid var(--stroke)',
+                borderRadius: 'var(--radius-md)',
+              }}
+            >
+              <div className="eyebrow" style={{ marginBottom: 4 }}>Best Level</div>
+              <div
+                className="tabular"
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: accentColor,
+                }}
+              >
                 {stats ? stats.bestLevel : '—'}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">{timeLabel || 'Last Time'}</p>
-              <p className="text-lg sm:text-2xl font-mono font-bold text-[var(--text)]">
+              </div>
+            </Panel>
+
+            <Panel
+              style={{
+                flex: 1,
+                padding: '12px 10px',
+                textAlign: 'center',
+                background: 'var(--bg-elev)',
+                border: '1px solid var(--stroke)',
+                borderRadius: 'var(--radius-md)',
+              }}
+            >
+              <div className="eyebrow" style={{ marginBottom: 4 }}>{timeLabel || 'Last Time'}</div>
+              <div
+                className="tabular"
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: accentColor,
+                }}
+              >
                 {stats ? formatTime(stats.lastTimeOfDeath) : '—'}
-              </p>
-            </div>
+              </div>
+            </Panel>
           </div>
         )}
 
         {/* Level selector */}
         {(alwaysShowLevelSelector || maxLevel > 1) && (
-          <div className="flex items-center gap-4 mb-6 sm:mb-8">
-            <button
-              onClick={handleLevelDown}
-              disabled={selectedLevel <= 1}
-              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg
-                bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20
-                disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              aria-label="Lower level"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text)]">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
+          <div style={{ position: 'relative', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <button
+                onClick={handleLevelDown}
+                disabled={selectedLevel <= 1}
+                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl transition-all"
+                style={{
+                  border: '1.5px solid var(--stroke)',
+                  background: 'var(--bg-elev)',
+                  color: 'var(--text)',
+                  opacity: selectedLevel <= 1 ? 0.3 : 1,
+                  cursor: selectedLevel <= 1 ? 'not-allowed' : 'pointer',
+                }}
+                aria-label="Lower level"
+              >
+                <Icon name="arrow" size={18} style={{ transform: 'rotate(180deg)' }} />
+              </button>
 
-            <div className="text-center min-w-[100px]">
-              <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-0.5">{levelLabel || 'Start Level'}</p>
-              <p className="text-2xl sm:text-3xl font-mono font-bold text-[var(--accent)]">{selectedLevel}</p>
+              <div style={{ textAlign: 'center', minWidth: 100 }}>
+                <div className="eyebrow" style={{ marginBottom: 2 }}>{levelLabel || 'Start Level'}</div>
+                <div
+                  className="tabular"
+                  style={{
+                    fontFamily: 'var(--font-pixel)',
+                    fontSize: 32,
+                    fontWeight: 700,
+                    color: accentColor,
+                  }}
+                >
+                  {selectedLevel}
+                </div>
+              </div>
+
+              <button
+                onClick={handleLevelUp}
+                disabled={!alwaysShowLevelSelector && selectedLevel >= unlockedMax}
+                className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] rounded-xl transition-all"
+                style={{
+                  border: `1.5px solid ${!alwaysShowLevelSelector && selectedLevel >= unlockedMax ? 'var(--stroke)' : 'var(--stroke)'}`,
+                  background: 'var(--bg-elev)',
+                  color: 'var(--text)',
+                  opacity: !alwaysShowLevelSelector && selectedLevel >= unlockedMax ? 0.3 : 1,
+                  cursor: !alwaysShowLevelSelector && selectedLevel >= unlockedMax ? 'not-allowed' : 'pointer',
+                }}
+                aria-label="Higher level"
+              >
+                <Icon name="arrow" size={18} />
+              </button>
             </div>
 
-            <button
-              onClick={handleLevelUp}
-              disabled={selectedLevel >= maxLevel}
-              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg
-                bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20
-                disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              aria-label="Higher level"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text)]">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </button>
+            {/* Locked level tooltip */}
+            {showLockedTip && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  marginTop: 8,
+                  padding: '8px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'var(--surface-alt)',
+                  border: '1px solid var(--accent-warning)',
+                  color: 'var(--accent-warning)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 11,
+                  fontWeight: 600,
+                  letterSpacing: '0.02em',
+                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
+                  animation: 'fadeInUp 0.2s var(--ease-out)',
+                  zIndex: 10,
+                }}
+              >
+                Complete level {unlockedMax} to unlock next
+              </div>
+            )}
           </div>
         )}
 
         {/* Start button */}
-        <button
+        <Button
+          variant={variant}
+          size="lg"
+          icon="play"
           onClick={() => onStart(selectedLevel)}
-          className="px-8 py-3 rounded-xl bg-[var(--accent)] text-white font-bold text-base sm:text-lg
-            hover:opacity-90 active:scale-95 transition-all"
         >
-          {selectedLevel > 1 ? `Start Level ${selectedLevel}` : 'Start Game'}
-        </button>
+          {selectedLevel > 1
+            ? `Start ${levelLabel ? `${levelLabel} ${selectedLevel}` : `Level ${selectedLevel}`}`
+            : 'Start Game'}
+        </Button>
       </div>
+
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+          to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

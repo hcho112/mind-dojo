@@ -299,6 +299,8 @@ export default function GamePage() {
         levelLabel={gameEntry.levelLabel}
         timeLabel={gameEntry.timeLabel}
         alwaysShowLevelSelector={gameEntry.alwaysShowLevelSelector}
+        accent={gameEntry.accent}
+        howToPlay={gameEntry.howToPlay}
         onStart={handleStart}
         onMenuOpen={handleMenuOpen}
         visible={gameState === 'idle'}

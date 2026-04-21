@@ -12,6 +12,8 @@ export interface GameEntry {
   disableBgMusic?: boolean; // auto-mute background music for focus-based games
   timeLabel?: string; // label for time stat on start screen (e.g. "Recall Time" instead of "Last Time")
   alwaysShowLevelSelector?: boolean; // show level selector even at level 1
+  accent?: string; // CSS variable for game accent (e.g. 'var(--accent-precision)')
+  howToPlay?: string; // short description of how the game works
   loader: () => Promise<{ default: ComponentType<GameComponentProps> }>;
 }
 
@@ -32,6 +34,8 @@ export const registry: Record<string, GameEntry> = {
     slug: 'target-precision',
     description: 'Hit the bullseye before time runs out',
     icon: '/images/game-target-precision.svg',
+    accent: 'var(--accent-precision)',
+    howToPlay: 'Tap shrinking targets before they expire. Hit early for combos. Miss or tap empty space to lose a life. Survive each level to advance.',
     loader: () => import('./target-precision'),
   },
   'card-recall': {
@@ -39,6 +43,8 @@ export const registry: Record<string, GameEntry> = {
     slug: 'card-recall',
     description: 'Memorize the card sequence and recall it',
     icon: '/images/game-card-recall.svg',
+    accent: 'var(--accent-recall)',
+    howToPlay: 'Swipe through a shuffled deck and memorize the order. Then recall each card by picking its suit and value. One wrong guess ends the run.',
     selfManagedGameOver: true,
     levelLabel: 'Decks',
     hudLevelPrefix: 'Deck',
