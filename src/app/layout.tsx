@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, VT323, JetBrains_Mono } from 'next/font/google';
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { DesignTweaksProvider } from '@/theme/DesignTweaksProvider';
+import { TweaksDock } from '@/components/ui/TweaksPanel';
 import './globals.css';
 
 const display = Space_Grotesk({
@@ -45,7 +47,10 @@ export default function RootLayout({
     >
       <body className="bg-[var(--bg)] text-[var(--text)] font-[family-name:var(--font-body)] h-dvh overflow-hidden antialiased">
         <ThemeProvider>
-          {children}
+          <DesignTweaksProvider>
+            {children}
+            <TweaksDock />
+          </DesignTweaksProvider>
         </ThemeProvider>
       </body>
     </html>
