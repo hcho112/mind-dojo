@@ -239,7 +239,14 @@ export default function CardRecallGame({
   }, [pickerDisabled, onScoreChange, onGameOver]);
 
   const handlePlayAgain = useCallback(() => {
-    // Signal the game page to return to idle — use timeOfDeath=-1 as sentinel
+    // Clear internal state so the component renders nothing
+    setSequence([]);
+    setGamePhase('viewing');
+    setCardStatuses([]);
+    setWrongGuessInfo(null);
+    setPerfectRun(false);
+    setBestStatsData(null);
+    // Signal the game page to return to idle
     onGameOver({ score: 0, level: deckCountRef.current, timeOfDeath: -1 });
   }, [onGameOver]);
 
