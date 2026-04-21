@@ -1,5 +1,9 @@
 'use client';
 
+import { Icon } from '@/components/ui/Icon';
+import { Lives } from '@/components/ui/Lives';
+import { Chip } from '@/components/ui/Chip';
+
 interface GameHUDProps {
   score: number;
   lives: number;
@@ -17,9 +21,30 @@ interface GameHUDProps {
   visible: boolean;
 }
 
-const buttonClass = `pointer-events-auto p-3 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center
-  bg-black/20 dark:bg-white/10 backdrop-blur-sm
-  hover:bg-black/30 dark:hover:bg-white/20 transition-colors`;
+/** Transparent pressable pill — 44×44 min touch target, backdrop blur */
+const iconBtnClass = [
+  'pointer-events-auto',
+  'inline-flex items-center justify-center',
+  'min-w-[44px] min-h-[44px] px-3',
+  'rounded-xl',
+  'border border-[var(--stroke-strong)]',
+  'bg-[color-mix(in_oklch,var(--bg-elev)_85%,transparent)]',
+  'backdrop-blur-[8px]',
+  'text-[var(--text)]',
+  'transition-colors',
+  'hover:border-[var(--accent-precision)] hover:text-[var(--accent-precision)]',
+  'active:scale-95',
+].join(' ');
+
+/** Inline stat pill — label + value side-by-side */
+const statPillClass = [
+  'inline-flex items-center gap-1.5',
+  'min-h-[44px] px-3',
+  'rounded-xl',
+  'border border-[var(--stroke-strong)]',
+  'bg-[color-mix(in_oklch,var(--bg-elev)_85%,transparent)]',
+  'backdrop-blur-[8px]',
+].join(' ');
 
 export function GameHUD({
   score, lives, maxLives, level, levelPrefix, timeRemaining, showTimer = true, showBottomBar = true, combo = 0,
@@ -29,34 +54,41 @@ export function GameHUD({
 
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = Math.floor(timeRemaining % 60);
-  const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(seconds).padStart(2, '0');
+  const timeLow = timeRemaining <= 10;
 
   return (
     <div className="absolute inset-0 pointer-events-none z-10">
-      <div className="flex items-start justify-between p-4">
+
+      {/* ── TOP STRIP ── transparent, no background ─────────────────────── */}
+      <div className="flex items-center gap-2 px-3 pt-3">
+
         {/* Left: menu + pause + sound */}
-        <div className="flex gap-2">
-          <button onClick={onMenuOpen} className={buttonClass} aria-label="Open menu">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" className="text-[var(--label)]">
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <line x1="3" y1="12" x2="21" y2="12" />
-              <line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
+        <div className="flex gap-1.5">
+          <button onClick={onMenuOpen} className={iconBtnClass} aria-label="Open menu">
+            <Icon name="menu" size={20} />
           </button>
 
-          <button onClick={onPause} className={buttonClass} aria-label="Pause game">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" className="text-[var(--label)]">
-              <line x1="8" y1="5" x2="8" y2="19" />
-              <line x1="16" y1="5" x2="16" y2="19" />
-            </svg>
+          <button onClick={onPause} className={iconBtnClass} aria-label="Pause game">
+            <Icon name="pause" size={20} />
           </button>
 
-          <button onClick={onToggleSound} className={buttonClass}
-            aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--label)]">
+          <button
+            onClick={onToggleSound}
+            className={iconBtnClass}
+            aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+          >
+            <svg
+              width={20} height={20}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.75}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
               {soundEnabled ? (
                 <>
                   <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
@@ -74,36 +106,126 @@ export function GameHUD({
           </button>
         </div>
 
-        {/* Center: timer (hidden for games without timers) */}
-        {showTimer && (
-          <div className="px-4 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-            <span className="text-lg sm:text-2xl font-mono font-bold text-[var(--label)]">{timeStr}</span>
-          </div>
-        )}
+        {/* Right: timer + score */}
+        <div className="flex gap-1.5 ml-auto">
+          {showTimer && (
+            <div
+              className={[
+                statPillClass,
+                timeLow
+                  ? 'border-[var(--accent-warning)] animate-[pulseLow_1s_ease-in-out_infinite]'
+                  : '',
+              ].join(' ')}
+            >
+              <span
+                className="uppercase"
+                style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--text-dim)' }}
+              >
+                TIME
+              </span>
+              <span
+                className="tabular-nums"
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: timeLow ? 'var(--accent-warning)' : 'var(--text)',
+                }}
+              >
+                {mm}:{ss}
+              </span>
+            </div>
+          )}
 
-        {/* Right: level */}
-        <div className="px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          <span className="text-sm sm:text-lg font-bold text-[var(--label)]">{levelPrefix || 'LV'} {level}</span>
+          <div className={statPillClass}>
+            <span
+              className="uppercase"
+              style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--text-dim)' }}
+            >
+              SCORE
+            </span>
+            <span
+              className="tabular-nums"
+              style={{
+                fontFamily: 'var(--font-pixel)',
+                fontWeight: 700,
+                fontSize: 14,
+                color: 'var(--accent-combo)',
+              }}
+            >
+              {score.toLocaleString()}
+            </span>
+          </div>
+
+          {combo >= 2 && (
+            <div className={statPillClass} style={{ borderColor: 'var(--accent-combo)' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-pixel)',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: 'var(--accent-combo)',
+                }}
+              >
+                ×{combo}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
-      {showBottomBar && <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center gap-3 px-4 pt-4"
-        style={{ paddingBottom: 'calc(1rem + var(--safe-bottom))' }}>
-        <div className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/20 dark:bg-white/10 backdrop-blur-sm">
-          {maxLives > 0 && Array.from({ length: maxLives }).map((_, i) => (
-            <img
-              key={i}
-              src={i < lives ? '/images/heart.svg' : '/images/heart-empty.svg'}
-              alt={i < lives ? 'Life' : 'Lost life'}
-              width={20}
-              height={20}
-            />
-          ))}
-          <span className={`${maxLives > 0 ? 'ml-2' : ''} text-lg sm:text-2xl font-mono font-bold text-[var(--label)]`}>
-            {score.toLocaleString()}
-          </span>
+      {/* ── BOTTOM STRIP ─────────────────────────────────────────────────── */}
+      {showBottomBar && (
+        <div
+          className="absolute bottom-0 left-0 right-0 grid items-center px-3"
+          style={{
+            gridTemplateColumns: '1fr auto 1fr',
+            gap: 8,
+            paddingBottom: 'calc(0.75rem + var(--safe-bottom, 0px))',
+          }}
+        >
+          {/* empty left cell keeps lives centred */}
+          <div />
+
+          {/* Centre: lives as hexagonal pips */}
+          {maxLives > 0 && (
+            <div className={statPillClass} style={{ gap: 10 }}>
+              <span
+                className="uppercase"
+                style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--text-dim)' }}
+              >
+                LIVES
+              </span>
+              <Lives count={lives} max={maxLives} />
+            </div>
+          )}
+
+          {/* Right: level pill */}
+          <div className="justify-self-end">
+            <Chip
+              tone="precision"
+              style={{
+                fontFamily: 'var(--font-pixel)',
+                fontSize: 14,
+                minHeight: 44,
+                padding: '0 12px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                border: '1.5px solid var(--accent-precision)',
+                borderRadius: 12,
+              }}
+            >
+              <span style={{ fontSize: 9, letterSpacing: '0.08em', color: 'var(--text-dim)' }}>
+                {levelPrefix || 'LV'}
+              </span>
+              <span style={{ color: 'var(--accent-precision)' }}>
+                {String(level).padStart(2, '0')}
+              </span>
+            </Chip>
+          </div>
         </div>
-      </div>}
+      )}
     </div>
   );
 }
