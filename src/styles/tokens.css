@@ -1,0 +1,187 @@
+/* ============================================================
+ * Mind Dojo — Design Tokens (hand-tuned)
+ *
+ * Drop in: src/styles/tokens.css
+ * Import once from app/globals.css or app/layout.tsx
+ *
+ * All colors use oklch for perceptual uniformity.
+ * Glow-heavy box-shadows pipe through --glow-strength, which is 0 in light mode
+ * so the whole design calms down automatically when users switch themes.
+ * ============================================================ */
+
+:root {
+  /* Type — load these families via next/font in app/layout.tsx */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-pixel: 'VT323', 'JetBrains Mono', monospace;
+
+  /* Scale */
+  --fs-xs: 12px; --fs-sm: 14px; --fs-md: 16px; --fs-lg: 20px;
+  --fs-xl: 28px; --fs-2xl: 40px; --fs-3xl: 56px; --fs-4xl: 88px; --fs-hero: 128px;
+
+  /* Radii (tweakable) */
+  --radius-sm: 8px; --radius-md: 14px; --radius-lg: 22px; --radius-pill: 999px;
+
+  /* Spacing */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px;
+
+  /* Accents */
+  --accent-precision: oklch(0.78 0.18 210);
+  --accent-precision-deep: oklch(0.55 0.18 210);
+  --accent-recall: oklch(0.72 0.18 340);
+  --accent-recall-deep: oklch(0.50 0.18 340);
+  --accent-combo: oklch(0.88 0.2 130);
+  --accent-combo-deep: oklch(0.65 0.2 130);
+  --accent-danger: oklch(0.68 0.2 25);
+  --accent-warning: oklch(0.82 0.17 75);
+
+  /* Motion */
+  --motion-scale: 1;
+  --ease-snap: cubic-bezier(0.2, 0.9, 0.25, 1.1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  --btn-press-offset: 4px;
+}
+
+/* DARK (default) — also applies when no [data-theme] attribute set */
+:root,
+[data-theme="dark"],
+html.dark {
+  --bg: #0B0D12;
+  --bg-elev: #14171F;
+  --bg-elev-2: #1B2030;
+  --surface: #191D28;
+  --surface-alt: #222837;
+  --stroke: oklch(0.35 0.015 260);
+  --stroke-strong: oklch(0.48 0.02 260);
+  --text: oklch(0.97 0.01 260);
+  --text-muted: oklch(0.72 0.02 260);
+  --text-dim: oklch(0.55 0.02 260);
+  --scanline: rgba(255,255,255,0.04);
+  --glow-strength: 1;
+  --shadow-soft: 0 10px 30px -10px rgba(0,0,0,0.6);
+  --shadow-card: 0 8px 24px -8px rgba(0,0,0,0.5), 0 1px 0 0 rgba(255,255,255,0.03) inset;
+}
+
+/* LIGHT */
+[data-theme="light"],
+html.light,
+html:not(.dark) {
+  --bg: #F4F2EC;
+  --bg-elev: #FBFAF6;
+  --bg-elev-2: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-alt: #F0EEE6;
+  --stroke: oklch(0.85 0.01 260);
+  --stroke-strong: oklch(0.72 0.02 260);
+  --text: oklch(0.22 0.02 260);
+  --text-muted: oklch(0.42 0.02 260);
+  --text-dim: oklch(0.58 0.02 260);
+  --scanline: rgba(0,0,0,0.025);
+  --glow-strength: 0;
+  --shadow-soft: 0 10px 30px -12px rgba(20,23,30,0.15);
+  --shadow-card: 0 8px 20px -10px rgba(20,23,30,0.15), 0 1px 0 0 rgba(255,255,255,0.8) inset;
+}
+/* If your theme system uses class="dark" on <html>, the dark block above wins.
+   If you use data-theme, those selectors win. Pick one and delete the other's selector to keep CSS tidy. */
+
+/* Body base */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utilities */
+.tabular { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.score-slab {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Scanline overlay — apply .scanlines to a positioned element */
+.scanlines { position: relative; }
+.scanlines::after {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg, var(--scanline) 0px, var(--scanline) 1px,
+    transparent 1px, transparent 3px
+  );
+  border-radius: inherit;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+}
+
+/* Chromatic aberration text — accents a word in a title */
+.aberration {
+  text-shadow:
+    -1.2px 0 color-mix(in oklch, var(--accent-recall) 80%, transparent),
+     1.2px 0 color-mix(in oklch, var(--accent-precision) 80%, transparent);
+}
+
+/* Rainbow for hot combos */
+@keyframes rainbow-shift { 0%, 100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(90deg); } }
+@keyframes rainbow-pan { 0% { background-position: 0% 0; } 100% { background-position: 300% 0; } }
+.rainbow-hot {
+  background: linear-gradient(90deg,
+    var(--accent-precision), var(--accent-recall), var(--accent-combo),
+    var(--accent-warning), var(--accent-precision));
+  background-size: 300% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  animation: rainbow-shift 2.2s linear infinite, rainbow-pan 4s linear infinite;
+}
+
+/* Life pip (hexagonal) */
+.pip {
+  width: 22px; height: 22px;
+  display: inline-block;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: var(--accent-danger);
+  transition: all 0.3s var(--ease-out);
+}
+.pip--empty {
+  background: transparent;
+  border: 2px dashed color-mix(in oklch, var(--accent-danger) 60%, transparent);
+  clip-path: none;
+  border-radius: 2px;
+  transform: rotate(45deg) scale(0.7);
+  opacity: 0.4;
+}
+
+/* Keyboard cap */
+.kbd {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--stroke-strong);
+  border-bottom-width: 3px;
+  background: var(--bg-elev);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
