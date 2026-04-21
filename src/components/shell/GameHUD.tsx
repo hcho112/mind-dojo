@@ -109,13 +109,15 @@ export function GameHUD({
         {/* Right: combo + timer + score */}
         <div className="flex gap-1.5 ml-auto">
           {combo >= 2 && (
-            <div className={statPillClass} style={{ borderColor: 'var(--accent-combo)' }}>
+            <div className={statPillClass} style={{ borderColor: 'var(--accent-combo)', minWidth: 52, justifyContent: 'center' }}>
               <span
+                className="tabular-nums"
                 style={{
                   fontFamily: 'var(--font-pixel)',
                   fontSize: 14,
                   fontWeight: 700,
                   color: 'var(--accent-combo)',
+                  textAlign: 'center',
                 }}
               >
                 ×{combo}
