@@ -165,7 +165,7 @@ export function StartScreen({
                 borderRadius: 'var(--radius-md)',
               }}
             >
-              <div className="eyebrow" style={{ marginBottom: 4 }}>Best Score</div>
+              <div className="eyebrow" style={{ marginBottom: 4, fontSize: 9, whiteSpace: 'nowrap' }}>Best Score</div>
               <div
                 className="tabular"
                 style={{
@@ -189,7 +189,7 @@ export function StartScreen({
                 borderRadius: 'var(--radius-md)',
               }}
             >
-              <div className="eyebrow" style={{ marginBottom: 4 }}>Best Level</div>
+              <div className="eyebrow" style={{ marginBottom: 4, fontSize: 9, whiteSpace: 'nowrap' }}>Best Level</div>
               <div
                 className="tabular"
                 style={{
@@ -213,7 +213,7 @@ export function StartScreen({
                 borderRadius: 'var(--radius-md)',
               }}
             >
-              <div className="eyebrow" style={{ marginBottom: 4 }}>{timeLabel || 'Last Time'}</div>
+              <div className="eyebrow" style={{ marginBottom: 4, fontSize: 9, whiteSpace: 'nowrap' }}>{timeLabel || 'Last Time'}</div>
               <div
                 className="tabular"
                 style={{
