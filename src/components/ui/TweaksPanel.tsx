@@ -125,6 +125,21 @@ export function TweaksToggle({ onClick }: { onClick: () => void }) {
 /** Convenience — mount once. Handles its own open/close state. */
 export function TweaksDock() {
   const [open, setOpen] = React.useState(false);
+  const [hidden, setHidden] = React.useState(false);
+
+  // Hide on /game/* routes
+  React.useEffect(() => {
+    const check = () => setHidden(window.location.pathname.startsWith('/game/'));
+    check();
+    window.addEventListener('popstate', check);
+    // MutationObserver to catch Next.js client-side navigation
+    const observer = new MutationObserver(check);
+    observer.observe(document.querySelector('head') || document.body, { childList: true, subtree: true });
+    return () => { window.removeEventListener('popstate', check); observer.disconnect(); };
+  }, []);
+
+  if (hidden) return null;
+
   return (
     <>
       {!open && <TweaksToggle onClick={() => setOpen(true)} />}

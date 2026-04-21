@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { registry } from '@/games/registry';
 import { openGameDB, getHistory, getBestStats, type BestStats } from '@/storage/gameStore';
 import { LineChart } from '@/components/charts/LineChart';
+import { Icon } from '@/components/ui/Icon';
 import type { GameResult } from '@/engine/types';
 
 interface GameStats {
   slug: string;
   name: string;
   icon: string;
+  accent: string;
   totalGames: number;
   best: BestStats | null;
   history: GameResult[];
@@ -32,6 +34,13 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+const statCardStyle: React.CSSProperties = {
+  padding: '14px 12px',
+  borderRadius: 'var(--radius-md)',
+  background: 'var(--bg-elev)',
+  border: '1px solid var(--stroke)',
+};
+
 export default function StatsPage() {
   const router = useRouter();
   const [gameStats, setGameStats] = useState<GameStats[]>([]);
@@ -52,6 +61,7 @@ export default function StatsPage() {
           slug: entry.slug,
           name: entry.name,
           icon: entry.icon,
+          accent: entry.accent || 'var(--accent-precision)',
           totalGames: history.length,
           best,
           history,
@@ -66,7 +76,6 @@ export default function StatsPage() {
 
   const selected = gameStats.find(g => g.slug === selectedSlug);
 
-  // Prepare chart data (oldest first for chronological display)
   const scoreData = selected?.history
     .slice()
     .reverse()
@@ -76,73 +85,192 @@ export default function StatsPage() {
     })) ?? [];
 
   return (
-    <div className="h-dvh overflow-y-auto bg-[var(--bg)]"
-      style={{ paddingBottom: 'var(--safe-bottom)' }}>
+    <div
+      style={{
+        height: '100dvh',
+        overflowY: 'auto',
+        background: 'var(--bg)',
+        paddingBottom: 'max(24px, var(--safe-bottom))',
+      }}
+    >
       {/* Header */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 p-4 bg-[var(--bg)]/90 backdrop-blur-sm border-b border-[var(--border)]">
+      <div
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          padding: '14px 16px',
+          borderBottom: '1px solid var(--stroke)',
+          background: 'color-mix(in oklch, var(--bg) 80%, transparent)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+        }}
+      >
         <button
           onClick={() => router.back()}
-          className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg
-            bg-black/10 dark:bg-white/10 hover:bg-black/20 dark:hover:bg-white/20 transition-colors"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: 44,
+            height: 44,
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--stroke-strong)',
+            background: 'color-mix(in oklch, var(--bg-elev) 85%, transparent)',
+            color: 'var(--text)',
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
           aria-label="Go back"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text)]">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
+          <span style={{ transform: 'rotate(180deg)', display: 'inline-flex' }}>
+            <Icon name="arrow" size={18} />
+          </span>
         </button>
-        <h1 className="text-xl font-bold text-[var(--text)]">Progress</h1>
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontSize: 20,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Progress
+        </h1>
       </div>
 
       {!loaded ? (
-        <div className="flex items-center justify-center h-64">
-          <p className="text-[var(--text-muted)] animate-pulse">Loading stats...</p>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 256,
+            fontFamily: 'var(--font-mono)',
+            fontSize: 12,
+            color: 'var(--text-dim)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+          }}
+        >
+          Loading stats...
         </div>
       ) : (
-        <div className="p-4 max-w-lg mx-auto">
-          {/* Game selector */}
-          <div className="flex gap-2 mb-6 overflow-x-auto">
-            {gameStats.map(g => (
-              <button
-                key={g.slug}
-                onClick={() => setSelectedSlug(g.slug)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg whitespace-nowrap transition-colors
-                  ${selectedSlug === g.slug
-                    ? 'bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30'
-                    : 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)]'
-                  }`}
-              >
-                <img src={g.icon} alt="" width={24} height={24} className="rounded" />
-                <span className="text-sm font-medium">{g.name}</span>
-              </button>
-            ))}
+        <div style={{ padding: 16, maxWidth: 500, margin: '0 auto' }}>
+          {/* Game selector tabs */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              marginBottom: 24,
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+            }}
+          >
+            {gameStats.map(g => {
+              const isActive = selectedSlug === g.slug;
+              return (
+                <button
+                  key={g.slug}
+                  onClick={() => setSelectedSlug(g.slug)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '8px 14px',
+                    borderRadius: 'var(--radius-md)',
+                    whiteSpace: 'nowrap',
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 600,
+                    fontSize: 13,
+                    border: `1.5px solid ${isActive ? g.accent : 'var(--stroke)'}`,
+                    background: isActive
+                      ? `color-mix(in oklch, ${g.accent} 12%, transparent)`
+                      : 'var(--bg-elev)',
+                    color: isActive ? g.accent : 'var(--text)',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <img src={g.icon} alt="" width={22} height={22} style={{ borderRadius: 6 }} />
+                  {g.name}
+                </button>
+              );
+            })}
           </div>
 
           {selected && (
             <>
               {/* Summary cards */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-                  <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Total Games</p>
-                  <p className="text-2xl font-mono font-bold text-[var(--text)]">{selected.totalGames}</p>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 10,
+                  marginBottom: 24,
+                }}
+              >
+                <div style={statCardStyle}>
+                  <div className="eyebrow" style={{ marginBottom: 4 }}>Total Games</div>
+                  <div
+                    className="tabular"
+                    style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: selected.accent,
+                    }}
+                  >
+                    {selected.totalGames}
+                  </div>
                 </div>
-                <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-                  <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Score</p>
-                  <p className="text-2xl font-mono font-bold text-[var(--text)]">
+
+                <div style={statCardStyle}>
+                  <div className="eyebrow" style={{ marginBottom: 4 }}>Best Score</div>
+                  <div
+                    className="tabular"
+                    style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: selected.accent,
+                    }}
+                  >
                     {selected.best?.bestScore.toLocaleString() ?? '—'}
-                  </p>
+                  </div>
                 </div>
-                <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-                  <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Best Level</p>
-                  <p className="text-2xl font-mono font-bold text-[var(--text)]">
+
+                <div style={statCardStyle}>
+                  <div className="eyebrow" style={{ marginBottom: 4 }}>Best Level</div>
+                  <div
+                    className="tabular"
+                    style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: selected.accent,
+                    }}
+                  >
                     {selected.best?.bestLevel ?? '—'}
-                  </p>
+                  </div>
                 </div>
-                <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--border)]">
-                  <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-1">Last Time</p>
-                  <p className="text-2xl font-mono font-bold text-[var(--text)]">
+
+                <div style={statCardStyle}>
+                  <div className="eyebrow" style={{ marginBottom: 4 }}>Last Time</div>
+                  <div
+                    className="tabular"
+                    style={{
+                      fontFamily: 'var(--font-pixel)',
+                      fontSize: 24,
+                      fontWeight: 700,
+                      color: selected.accent,
+                    }}
+                  >
                     {selected.best ? formatTime(selected.best.lastTimeOfDeath) : '—'}
-                  </p>
+                  </div>
                 </div>
               </div>
 
@@ -150,30 +278,105 @@ export default function StatsPage() {
               <LineChart
                 title="Score History"
                 data={scoreData}
-                color="#6366f1"
+                color={selected.accent}
               />
 
               {/* Recent games table */}
               {selected.history.length > 0 && (
-                <div className="mt-2">
-                  <h3 className="text-sm font-medium text-[var(--text-muted)] mb-2">Recent Games</h3>
-                  <div className="rounded-xl bg-[var(--surface)] border border-[var(--border)] overflow-hidden">
-                    <table className="w-full text-sm">
+                <div>
+                  <div className="eyebrow" style={{ marginBottom: 8, paddingLeft: 2 }}>Recent Games</div>
+                  <div
+                    style={{
+                      borderRadius: 'var(--radius-md)',
+                      background: 'var(--bg-elev)',
+                      border: '1px solid var(--stroke)',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       <thead>
-                        <tr className="border-b border-[var(--border)]">
-                          <th className="text-left px-3 py-2 text-xs uppercase text-[var(--text-muted)]">Date</th>
-                          <th className="text-right px-3 py-2 text-xs uppercase text-[var(--text-muted)]">Score</th>
-                          <th className="text-right px-3 py-2 text-xs uppercase text-[var(--text-muted)]">Level</th>
-                          <th className="text-right px-3 py-2 text-xs uppercase text-[var(--text-muted)]">Time</th>
+                        <tr style={{ borderBottom: '1px solid var(--stroke)' }}>
+                          <th
+                            className="eyebrow"
+                            style={{ textAlign: 'left', padding: '10px 12px', fontSize: 9 }}
+                          >
+                            Date
+                          </th>
+                          <th
+                            className="eyebrow"
+                            style={{ textAlign: 'right', padding: '10px 12px', fontSize: 9 }}
+                          >
+                            Score
+                          </th>
+                          <th
+                            className="eyebrow"
+                            style={{ textAlign: 'right', padding: '10px 12px', fontSize: 9 }}
+                          >
+                            Level
+                          </th>
+                          <th
+                            className="eyebrow"
+                            style={{ textAlign: 'right', padding: '10px 12px', fontSize: 9 }}
+                          >
+                            Time
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {selected.history.slice(0, 20).map((r, i) => (
-                          <tr key={i} className="border-b border-[var(--border)] last:border-0">
-                            <td className="px-3 py-2 text-[var(--text-muted)]">{formatDateTime(r.timestamp)}</td>
-                            <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{r.score.toLocaleString()}</td>
-                            <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{r.level}</td>
-                            <td className="px-3 py-2 text-right font-mono text-[var(--text)]">{formatTime(r.timeOfDeath)}</td>
+                          <tr
+                            key={i}
+                            style={{
+                              borderBottom: i < Math.min(selected.history.length, 20) - 1
+                                ? '1px solid var(--stroke)'
+                                : 'none',
+                            }}
+                          >
+                            <td
+                              style={{
+                                padding: '10px 12px',
+                                color: 'var(--text-muted)',
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: 12,
+                              }}
+                            >
+                              {formatDateTime(r.timestamp)}
+                            </td>
+                            <td
+                              className="tabular"
+                              style={{
+                                padding: '10px 12px',
+                                textAlign: 'right',
+                                fontFamily: 'var(--font-pixel)',
+                                fontWeight: 700,
+                                color: selected.accent,
+                              }}
+                            >
+                              {r.score.toLocaleString()}
+                            </td>
+                            <td
+                              className="tabular"
+                              style={{
+                                padding: '10px 12px',
+                                textAlign: 'right',
+                                fontFamily: 'var(--font-pixel)',
+                                color: 'var(--text)',
+                              }}
+                            >
+                              {r.level}
+                            </td>
+                            <td
+                              className="tabular"
+                              style={{
+                                padding: '10px 12px',
+                                textAlign: 'right',
+                                fontFamily: 'var(--font-mono)',
+                                fontSize: 12,
+                                color: 'var(--text-muted)',
+                              }}
+                            >
+                              {formatTime(r.timeOfDeath)}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

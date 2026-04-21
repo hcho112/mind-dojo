@@ -11,10 +11,22 @@ interface LineChartProps {
   title: string;
 }
 
-export function LineChart({ data, color = 'var(--accent)', title }: LineChartProps) {
+export function LineChart({ data, color = 'var(--accent-precision)', title }: LineChartProps) {
   if (data.length === 0) {
     return (
-      <div className="text-center text-sm text-[var(--text-muted)] py-8">No data yet</div>
+      <div
+        style={{
+          textAlign: 'center',
+          padding: '32px 0',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 12,
+          color: 'var(--text-dim)',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+        }}
+      >
+        No data yet
+      </div>
     );
   }
 
@@ -37,13 +49,11 @@ export function LineChart({ data, color = 'var(--accent)', title }: LineChartPro
 
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
-  // Y-axis: 3 ticks
   const yTicks = [minVal, minVal + range / 2, maxVal].map(v => ({
     value: Math.round(v),
     y: padding.top + chartH - ((v - minVal) / range) * chartH,
   }));
 
-  // X-axis: up to 5 evenly spaced labels
   const labelCount = Math.min(data.length, 5);
   const xIndices: number[] = [];
   for (let i = 0; i < labelCount; i++) {
@@ -52,11 +62,16 @@ export function LineChart({ data, color = 'var(--accent)', title }: LineChartPro
   if (data.length === 1) xIndices.splice(0, xIndices.length, 0);
 
   return (
-    <div className="mb-5">
-      <h3 className="text-sm font-medium text-[var(--text-muted)] mb-2">{title}</h3>
+    <div style={{ marginBottom: 20 }}>
+      <div className="eyebrow" style={{ marginBottom: 8, paddingLeft: 2 }}>{title}</div>
       <svg
         viewBox={`0 0 ${viewW} ${viewH}`}
-        className="w-full rounded-lg bg-[var(--surface)] border border-[var(--border)]"
+        style={{
+          width: '100%',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--bg-elev)',
+          border: '1px solid var(--stroke)',
+        }}
       >
         {/* Grid lines */}
         {yTicks.map((tick, i) => (
@@ -66,17 +81,17 @@ export function LineChart({ data, color = 'var(--accent)', title }: LineChartPro
             y1={tick.y}
             x2={padding.left + chartW}
             y2={tick.y}
-            stroke="var(--border)"
+            stroke="var(--stroke)"
             strokeWidth="0.5"
           />
         ))}
 
         {/* Line */}
-        <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+        <path d={linePath} fill="none" stroke={color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
 
         {/* Dots */}
         {points.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r="3" fill={color} />
+          <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={color} />
         ))}
 
         {/* Y-axis labels */}
@@ -86,8 +101,9 @@ export function LineChart({ data, color = 'var(--accent)', title }: LineChartPro
             x={padding.left - 6}
             y={tick.y + 4}
             textAnchor="end"
-            fontSize="10"
-            fill="var(--text-muted)"
+            fontSize="9"
+            fontFamily="var(--font-mono)"
+            fill="var(--text-dim)"
           >
             {tick.value.toLocaleString()}
           </text>
@@ -100,8 +116,9 @@ export function LineChart({ data, color = 'var(--accent)', title }: LineChartPro
             x={points[idx].x}
             y={viewH - 4}
             textAnchor="middle"
-            fontSize="9"
-            fill="var(--text-muted)"
+            fontSize="8"
+            fontFamily="var(--font-mono)"
+            fill="var(--text-dim)"
           >
             {data[idx].label}
           </text>
