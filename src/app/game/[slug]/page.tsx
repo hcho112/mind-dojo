@@ -263,8 +263,8 @@ export default function GamePage() {
         visible={isGameActive}
       />
 
-      {/* Pause overlay */}
-      {gameState === 'paused' && (
+      {/* Pause overlay (only for non-self-managed games) */}
+      {gameState === 'paused' && !gameEntry?.selfManagedGameOver && (
         <div
           className="absolute inset-0 z-20 flex flex-col items-center justify-center
             bg-black/50 backdrop-blur-sm cursor-pointer"

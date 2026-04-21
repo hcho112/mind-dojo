@@ -64,7 +64,7 @@ export function GameHUD({
       {/* ── TOP STRIP ── transparent, no background ─────────────────────── */}
       <div className="flex items-center gap-2 px-3 pt-3">
 
-        {/* Left: menu + pause */}
+        {/* Left: menu + pause + sound */}
         <div className="flex gap-1.5">
           <button onClick={onMenuOpen} className={iconBtnClass} aria-label="Open menu">
             <Icon name="menu" size={20} />
@@ -73,20 +73,12 @@ export function GameHUD({
           <button onClick={onPause} className={iconBtnClass} aria-label="Pause game">
             <Icon name="pause" size={20} />
           </button>
-        </div>
 
-        {/* Sound toggle — moved to bottom-left, rendered here for JSX ordering but positioned absolutely */}
-        <button
-          onClick={onToggleSound}
-          className={iconBtnClass}
-          style={{
-            position: 'fixed',
-            left: 12,
-            bottom: `calc(12px + var(--safe-bottom, 0px))`,
-            zIndex: 15,
-          }}
-          aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}
-        >
+          <button
+            onClick={onToggleSound}
+            className={iconBtnClass}
+            aria-label={soundEnabled ? 'Mute sound' : 'Unmute sound'}
+          >
             <svg
               width={20} height={20}
               viewBox="0 0 24 24"
@@ -112,6 +104,7 @@ export function GameHUD({
               )}
             </svg>
           </button>
+        </div>
 
         {/* Right: combo + timer + score */}
         <div className="flex gap-1.5 ml-auto">

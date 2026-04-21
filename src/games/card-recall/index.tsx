@@ -248,18 +248,34 @@ export default function CardRecallGame({
 
   return (
     <div className="relative flex flex-col w-full h-full">
-      {/* Pause overlay */}
+      {/* Pause overlay — tap to resume */}
       {paused && (
         <div
-          className="absolute inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.7)' }}
+          className="absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer"
+          style={{
+            background: 'color-mix(in oklch, var(--bg) 80%, transparent)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+          }}
+          onClick={() => setPaused(false)}
         >
-          <p
-            className="text-3xl tracking-widest"
-            style={{ fontFamily: 'var(--font-pixel)', color: 'var(--accent-recall)' }}
+          <div
+            style={{
+              padding: '24px 36px',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-elev)',
+              border: '1px solid var(--stroke)',
+              boxShadow: 'var(--shadow-card)',
+              textAlign: 'center',
+            }}
           >
-            Paused
-          </p>
+            <p style={{ fontFamily: 'var(--font-pixel)', fontSize: 32, color: 'var(--accent-recall)', letterSpacing: '0.08em', marginBottom: 8 }}>
+              Paused
+            </p>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Tap to resume
+            </p>
+          </div>
         </div>
       )}
 
