@@ -116,3 +116,15 @@ export async function getHistory(
     request.onerror = () => reject(request.error);
   });
 }
+
+export async function getTotalGamesPlayed(): Promise<number> {
+  const db = await openGameDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const request = store.count();
+
+  return new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}

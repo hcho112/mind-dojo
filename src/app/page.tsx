@@ -6,7 +6,7 @@ import { Panel } from '@/components/ui/Panel';
 import { Button } from '@/components/ui/Button';
 import { Chip } from '@/components/ui/Chip';
 import { Icon } from '@/components/ui/Icon';
-import { getBestStats, type BestStats } from '@/storage/gameStore';
+import { getBestStats, getTotalGamesPlayed, type BestStats } from '@/storage/gameStore';
 
 // ─── Arcade backdrop: fixed dot-grid + vignette ──────────────────────────────
 
@@ -77,7 +77,7 @@ function CornerBrackets({
 
 // ─── Sticky header ────────────────────────────────────────────────────────────
 
-function MenuHeader() {
+function MenuHeader({ totalGames }: { totalGames: number }) {
   return (
     <header
       style={{
@@ -167,9 +167,9 @@ function MenuHeader() {
               background: 'var(--accent-combo)',
             }}
           />
-          <span className="menu-streak-text">7 day streak</span>
+          <span className="menu-streak-text">{totalGames} games played</span>
           <span className="menu-streak-short" style={{ display: 'none' }}>
-            7d
+            {totalGames}
           </span>
         </div>
 
@@ -200,29 +200,6 @@ function MenuHeader() {
           <span className="menu-label">Stats</span>
         </Link>
 
-        {/* Settings button (placeholder) */}
-        <button
-          aria-label="Settings"
-          className="menu-ghost"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            height: 36,
-            padding: '0 12px',
-            borderRadius: 'var(--radius-pill)',
-            fontFamily: 'var(--font-display)',
-            fontWeight: 600,
-            fontSize: 13,
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            transition: 'background 0.15s, color 0.15s',
-          }}
-        >
-          <Icon name="settings" size={16} />
-        </button>
       </nav>
 
       <style>{`
@@ -631,10 +608,12 @@ function ActivityPanel({
 export default function Home() {
   const [precisionStats, setPrecisionStats] = useState<BestStats | null>(null);
   const [recallStats, setRecallStats] = useState<BestStats | null>(null);
+  const [totalGames, setTotalGames] = useState(0);
 
   useEffect(() => {
     getBestStats('target-precision').then(setPrecisionStats).catch(() => {});
     getBestStats('card-recall').then(setRecallStats).catch(() => {});
+    getTotalGamesPlayed().then(setTotalGames).catch(() => {});
   }, []);
 
   // Format stats display values
@@ -664,7 +643,7 @@ export default function Home() {
         <ArcadeBackdrop />
 
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <MenuHeader />
+          <MenuHeader totalGames={totalGames} />
 
           {/* ── HERO ─────────────────────────────────────────────────────── */}
           <section
