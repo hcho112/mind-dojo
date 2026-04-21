@@ -724,50 +724,6 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Right: quick stats */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 20,
-                  alignItems: 'center',
-                  paddingBottom: 8,
-                  flexWrap: 'wrap',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span className="eyebrow">Today</span>
-                  <span
-                    className="score-slab tabular"
-                    style={{
-                      fontSize: 'clamp(24px, 3.2vw, 34px)',
-                      color: 'var(--accent-combo)',
-                    }}
-                  >
-                    00:12:08
-                  </span>
-                </div>
-                <div
-                  style={{ width: 1, height: 44, background: 'var(--stroke)' }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span className="eyebrow">Streak</span>
-                  <span
-                    className="score-slab tabular"
-                    style={{ fontSize: 'clamp(24px, 3.2vw, 34px)' }}
-                  >
-                    7
-                    <span
-                      style={{
-                        fontSize: 18,
-                        color: 'var(--text-muted)',
-                        marginLeft: 4,
-                      }}
-                    >
-                      days
-                    </span>
-                  </span>
-                </div>
-              </div>
             </div>
           </section>
 
