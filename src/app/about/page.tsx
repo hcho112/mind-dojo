@@ -13,8 +13,8 @@ const techFavicons: Record<string, string> = {
   canvas: 'https://developer.mozilla.org/favicon-48x48.png',
   indexeddb: 'https://developer.mozilla.org/favicon-48x48.png',
   vitest: 'https://vitest.dev/favicon.ico',
-  'claude-code': 'https://claude.ai/favicon.ico',
-  'claude-design': 'https://claude.ai/favicon.ico',
+  'claude-code': '/images/claude-icon.svg',
+  'claude-design': '/images/claude-icon.svg',
 };
 
 const TECH_STACK = [
